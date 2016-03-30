@@ -1,0 +1,6 @@
+﻿  stdafx.cpp
+  TestDemo.cpp
+TestDemo.obj : error LNK2001: 无法解析的外部符号 __imp__CreateFtpConnector
+TestDemo.obj : error LNK2001: 无法解析的外部符号 __imp__ConnectFtp
+TestDemo.obj : error LNK2001: 无法解析的外部符号 __imp__ReleaseFtpConnector
+D:\ZhongyuanLiang\CodeStore\FtpUtils\Release\TestDemo.exe : fatal error LNK1120: 3 个无法解析的外部命令
