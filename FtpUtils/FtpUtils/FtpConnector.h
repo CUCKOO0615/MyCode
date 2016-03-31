@@ -26,6 +26,9 @@ public:
     */
     CFtpConnection* GetConnection();
 
+    CString GetFtpRootDir();
+    CString GetFtpCurrentDir();
+
     /*
     ** 设置服务器当前目录
     ** @Param strDirPath: 相对路径 
@@ -46,6 +49,8 @@ public:
 private:
     CInternetSession m_objSession;
     CFtpConnection* m_pConnection;
+    CString m_strFtpRootDir;
+    CString m_strFtpCurrentDir;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -54,4 +59,14 @@ private:
 inline CFtpConnection* FtpConnector::GetConnection()
 {
     return m_pConnection;
+}
+
+inline CString FtpConnector::GetFtpRootDir()
+{
+    return m_strFtpRootDir;
+}
+
+inline CString FtpConnector::GetFtpCurrentDir()
+{
+    return m_strFtpCurrentDir;
 }

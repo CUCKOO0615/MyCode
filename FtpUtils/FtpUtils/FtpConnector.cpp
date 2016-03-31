@@ -26,11 +26,10 @@ bool FtpConnector::CreateFtpConnection(
     const char* szIP, unsigned short usPort,
     const char* szUserName, const char* szPassword)
 {
-    if (!szIP || !strlen(szIP))             szIP = "127.0.0.1";
-    if (!usPort)                            usPort = 21;
-    if (!szUserName || !strlen(szUserName)) szUserName = "anonymous";
-    if (!szPassword || !strlen(szPassword)) szPassword = "";
-
+    ASSERT(szIP);
+    ASSERT(usPort);
+    ASSERT(szUserName);
+    ASSERT(szPassword);
     CString strIP = CStringUtils::StrConv_cstr2CStringT(szIP);
     CString strUserName = CStringUtils::StrConv_cstr2CStringT(szUserName);
     CString strPassword = CStringUtils::StrConv_cstr2CStringT(szPassword);
@@ -41,17 +40,31 @@ bool FtpConnector::CreateFtpConnection(
         m_pConnection = m_objSession.GetFtpConnection(
             strIP, strUserName, strPassword, (INTERNET_PORT)usPort,
             FALSE); //该函数操作失败会直接抛异常,不需要检查返回值
+
+        if (!m_pConnection->GetCurrentDirectory(m_strFtpRootDir))
+        {
+            m_pConnection->Close();
+            m_pConnection = NULL;
+            WRITE_LOG_ERROR("Get FTP current dir failed, err code:%d", ::GetLastError());
+            return false;
+        }
+#ifdef UNICODE
+        //UNICODE下该字符串末尾会有两个L'\0',长度检测+1,影响字符串拼加
+        m_strFtpRootDir.Delete(m_strFtpRootDir.GetLength() - 1, 1);
+#endif // UNICODE
+        if (_T('/') != m_strFtpRootDir[m_strFtpRootDir.GetLength() - 1] &&
+            _T('\\') != m_strFtpRootDir[m_strFtpRootDir.GetLength() - 1])
+            m_strFtpRootDir += _T("/");
+        m_strFtpCurrentDir = m_strFtpRootDir;
         return true;
     }
     catch (CInternetException *pEx)
     {
         TCHAR szError[255] = { 0 };
-        CStringA strErrA;
         if (pEx->GetErrorMessage(szError, 255))
-            strErrA = CStringUtils::StrConv_TStr2CStringA(szError);
+            WRITE_LOG_ERROR(szError);
         else
-            strErrA = "FTP unknown exception";
-        WRITE_LOG_ERROR(strErrA.GetBuffer(0));
+            WRITE_LOG_ERROR("FTP unknown exception");
         pEx->Delete();
         return false;
     }
@@ -73,13 +86,12 @@ bool FtpConnector::SetCurrentDir(CString strDirPath)
         if (ERROR_INTERNET_EXTENDED_ERROR == dwErrCode)
         {
             TCHAR szError[256] = { 0 };
-            DWORD dwErrorSize = 256;
-            DWORD dwLastErrorMsg;
+            DWORD dwLastErrorMsg, dwErrorSize = 256;
             InternetGetLastResponseInfo(&dwLastErrorMsg, szError, &dwErrorSize);
-            CStringA strErrA = CStringUtils::StrConv_TStr2CStringA(szError);
-            WRITE_LOG_ERROR(strErrA.GetBuffer(0));
+            WRITE_LOG_ERROR(szError);
         }
         return false;
     }
+    m_strFtpCurrentDir = strDirPath;
     return true;
 }

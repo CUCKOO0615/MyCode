@@ -37,18 +37,17 @@ namespace CkFtpUtils
         const char* szUserName = "anonymous", const char* szPassword = "");
     
     /*
-    ** 测试FTP服务器指定目录是否存在
+    ** 尝试设定FTP服务器当前目录
     ** @Param pConnector: 有效的FtpConnector对象
     ** @Param szRemotePath: 远程路径,设为NULL或""时默认为"/"
     ** @Param bUtf8Path: 是否启用UTF8编码发送字节流
     ** @Ret : 参见以下返回值
     // 0 Successful
     // 1 FtpConnector is NULL
-    // 2 Get FTP Server's current dir failed
-    // 3 UTF8 Convert failed
-    // 4 Set FTP Server's current dir failed
+    // 2 UTF8 Convert failed
+    // 3 Set FTP Server's current dir failed
     */
-    CK_API int FtpCheckDirExist(FtpConnector* pConnector,  const char* szRemotePath, bool bUtf8Path);
+    CK_API int FtpTry2SetCurDir(FtpConnector* pConnector,  const char* szRemotePath, bool bUtf8Path);
     
     /*
     ** 删除服务器上的文件
@@ -59,10 +58,9 @@ namespace CkFtpUtils
     ** @Ret : 
     // 0 Successful
     // 1 FtpConnector is NULL
-    // 2 Get FTP Server's current dir failed
-    // 3 UTF8 Convert failed
-    // 4 Set FTP Server's current dir failed
-    // 5 Remove file failed
+    // 2 UTF8 Convert failed
+    // 3 Set FTP Server's current dir failed
+    // 4 Remove file failed
     */
     CK_API int FtpRemoveFile(FtpConnector* pConnector, 
         const char* szRemotePath, const char* szFileName, bool bUtf8Path);

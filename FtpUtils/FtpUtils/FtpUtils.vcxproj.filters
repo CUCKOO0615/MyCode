@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{457ffb26-3b99-4fb2-a40b-af4f3a03fe4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Export">
+      <UniqueIdentifier>{31615e3e-0509-494e-8d14-2b9faa3fe6aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -24,17 +30,17 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="StringUtils.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="CStringUtils.cpp">
-      <Filter>源文件</Filter>
+      <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="FtpConnector.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="StringUtils.cpp">
+      <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="FtpUtils_ExportC.cpp">
-      <Filter>源文件</Filter>
+      <Filter>Export</Filter>
+    </ClCompile>
+    <ClCompile Include="FtpConnector.cpp">
+      <Filter>Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -50,26 +56,26 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="FtpUtils_ExportC.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="CStringUtils.h">
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="LogUtils.hpp">
-      <Filter>头文件</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="StringUtils.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="CStringUtils.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="FtpUtils_ExportC.h">
+      <Filter>Export</Filter>
     </ClInclude>
     <ClInclude Include="FtpConnector.h">
-      <Filter>头文件</Filter>
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="StringUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="PtrUtils.hpp">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="FtpUtils.def">
-      <Filter>源文件</Filter>
-    </None>
     <None Include="res\FtpUtils.rc2">
       <Filter>资源文件</Filter>
     </None>
