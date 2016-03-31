@@ -1,6 +1,0 @@
- [2016/03/31 10:17:52 ERROR]: 550 /C:/FTP/CUCKOO0615_MUSIC_FTP/1.txt: Permission denied.
-
- [2016/03/31 10:17:52 ERROR]: Delete specified file failed, filename: 1.txt, error code: 12003
- [2016/03/31 10:19:08 ERROR]: 550 /C:/FTP/CUCKOO0615_MUSIC_FTP/1.txt: Permission denied.
-
- [2016/03/31 10:19:18 ERROR]: Delete specified file failed, filename: 1.txt, error code: 12003
