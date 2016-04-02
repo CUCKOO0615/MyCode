@@ -54,7 +54,7 @@ namespace CkLogUtils
 	** 将指定的字符串写入日志(多字节参数)
 	** @param wszRec: 输出的日志,支持格式化输出
 	*/
-    CK_API void Recording(LogUtils* p, LOG_LEVEL emLL, const char* szRec, ...);
+    CK_API void RecordingA(LogUtils* p, LOG_LEVEL emLL, const char* szRec, ...);
     
 	/*
 	** 将指定的字符串写入日志(宽字节参数)

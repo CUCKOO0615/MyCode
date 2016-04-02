@@ -59,6 +59,11 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy ..\Debug\LogUtils.dll ..\Bin\LogUtils_D.dll
+copy ..\Debug\LogUtils.lib ..\Bin\LogUtils_D.lib
+copy LogUtils_ExportC.h ..\Bin\LogUtils_ExportC.h</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -76,6 +81,11 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <PostBuildEvent>
+      <Command>copy ..\Release\LogUtils.dll ..\Bin\LogUtils.dll
+copy ..\Release\LogUtils.lib ..\Bin\LogUtils.lib
+copy LogUtils_ExportC.h ..\Bin\LogUtils_ExportC.h</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

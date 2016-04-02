@@ -27,7 +27,7 @@ CK_API bool InitLogUtils(LogUtils* p,
 	return p->InitLogUtils(szDirPath, szLogNamePrefix, bSwitchFileByDate, nMaxFileSize);
 }
 
-CK_API void CkLogUtils::Recording(LogUtils* p, LOG_LEVEL emLL, const char* szRec, ...)
+CK_API void CkLogUtils::RecordingA(LogUtils* p, LOG_LEVEL emLL, const char* szRec, ...)
 {
     if (!p) return;
     va_list argsList;

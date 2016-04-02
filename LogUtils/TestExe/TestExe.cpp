@@ -22,7 +22,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	while (1)
 	{
-		CkLogUtils::Recording(pLogUtils, LL_WARN, "Test formatA:%s%s_%d", "ΞΪΐ­ίχ", "AAATTT", 10086);
+		CkLogUtils::RecordingA(pLogUtils, LL_WARN, "Test formatA:%s%s_%d", "ΞΪΐ­ίχ", "AAATTT", 10086);
 
 		CkLogUtils::RecordingW(pLogUtils, LL_WARN, L"Test formatW:%s%s_%d", L"ΞΪΐ­ίχ", L"AAATTT", 10086);
 		
