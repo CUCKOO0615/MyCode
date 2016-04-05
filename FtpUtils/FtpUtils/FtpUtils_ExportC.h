@@ -24,6 +24,13 @@ namespace CkFtpUtils
     */
     CK_API void ReleaseFtpConnector(FtpConnector* pFtpConn);
 
+	/*
+	** 获取错误信息
+	** @Param pConnector: 有效的FtpConnector对象
+	** @Ret: 包含错误信息的字符串
+	*/
+	CK_API const char* GetLastErrMsg(FtpConnector* pConnector);
+	
     /*
     ** 连接到指定的FTP服务器
     ** @Param pConnector: 有效的FtpConnector对象
@@ -33,7 +40,8 @@ namespace CkFtpUtils
     ** @Param szPassword: 密码
     ** @Ret : 连接成功返回true,失败返回false,错误信息见日志
     */
-    CK_API bool ConnectFtp(FtpConnector* pConnector, const char* szIP, unsigned short usPort = 21,
+    CK_API bool ConnectFtp(FtpConnector* pConnector, 
+		const char* szIP, unsigned short usPort = 21,
         const char* szUserName = "anonymous", const char* szPassword = "");
     
     /*
@@ -43,11 +51,11 @@ namespace CkFtpUtils
     ** @Param bUtf8Path: 是否启用UTF8编码发送字节流
     ** @Ret : 参见以下返回值
     // 0 Successful
-    // 1 FtpConnector is NULL
-    // 2 UTF8 Convert failed
-    // 3 Set FTP Server's current dir failed
+    // 1 UTF8 Convert failed
+    // 2 Set FTP Server's current dir failed
     */
-    CK_API int FtpTry2SetCurDir(FtpConnector* pConnector,  const char* szRemotePath, bool bUtf8Path);
+    CK_API int FtpTry2SetCurDir(FtpConnector* pConnector,  
+		const char* szRemotePath, bool bUtf8Path);
     
     /*
     ** 删除服务器上的文件
@@ -57,10 +65,9 @@ namespace CkFtpUtils
     ** @Param bUtf8Path: 是否启用UTF8编码发送字节流
     ** @Ret : 
     // 0 Successful
-    // 1 FtpConnector is NULL
-    // 2 UTF8 Convert failed
-    // 3 Set FTP Server's current dir failed
-    // 4 Remove file failed
+    // 1 UTF8 Convert failed
+    // 2 Set FTP Server's current dir failed
+    // 3 Remove file failed
     */
     CK_API int FtpRemoveFile(FtpConnector* pConnector, 
         const char* szRemotePath, const char* szFileName, bool bUtf8Path);

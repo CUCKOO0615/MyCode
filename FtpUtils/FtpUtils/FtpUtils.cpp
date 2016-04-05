@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include "FtpUtils.h"
-#include "LogUtils.hpp"
+//#include "LogUtils.hpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,7 +59,6 @@ CFtpUtilsApp theApp;
 BOOL CFtpUtilsApp::InitInstance()
 {
     CWinApp::InitInstance();
-    LogUtils::GetInstance().InitLogUtils(".\\Log\\", "CollBusiness_FtpUtils");
     return TRUE;
 }
 

@@ -1,12 +1,15 @@
 #include "StdAfx.h"
+
+#pragma warning(disable:4996)
 #include "FtpConnector.h"
 #include "CStringUtils.h"
-#include "LogUtils.hpp"
-
+#include "StringUtils.h"
+//#include "LogUtils.hpp"
 
 FtpConnector::FtpConnector(const TCHAR* szSessionName, DWORD dwDelay)
 :m_objSession(szSessionName), m_pConnection(NULL)
 {
+	::memset(m_szLastErrMsg, 0, LASTERRMSG_LENGTH);
     m_objSession.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, dwDelay);
     m_objSession.SetOption(INTERNET_OPTION_SEND_TIMEOUT, dwDelay);
     m_objSession.SetOption(INTERNET_OPTION_RECEIVE_TIMEOUT, dwDelay);
@@ -26,10 +29,6 @@ bool FtpConnector::CreateFtpConnection(
     const char* szIP, unsigned short usPort,
     const char* szUserName, const char* szPassword)
 {
-    ASSERT(szIP);
-    ASSERT(usPort);
-    ASSERT(szUserName);
-    ASSERT(szPassword);
     CString strIP = CStringUtils::StrConv_cstr2CStringT(szIP);
     CString strUserName = CStringUtils::StrConv_cstr2CStringT(szUserName);
     CString strPassword = CStringUtils::StrConv_cstr2CStringT(szPassword);
@@ -45,11 +44,11 @@ bool FtpConnector::CreateFtpConnection(
         {
             m_pConnection->Close();
             m_pConnection = NULL;
-            WRITE_LOG_ERROR("Get FTP current dir failed, err code:%d", ::GetLastError());
+			SetLastErrMsg("Get FTP current dir failed, err code:%d", ::GetLastError());
             return false;
         }
 #ifdef UNICODE
-        //UNICODE下该字符串末尾会有两个L'\0',长度检测+1,影响字符串拼加
+        //UNICODE下该字符串末尾会有两个L'\0',导致长度检测+1,影响字符串拼加
         m_strFtpRootDir.Delete(m_strFtpRootDir.GetLength() - 1, 1);
 #endif // UNICODE
         if (_T('/') != m_strFtpRootDir[m_strFtpRootDir.GetLength() - 1] &&
@@ -61,10 +60,10 @@ bool FtpConnector::CreateFtpConnection(
     catch (CInternetException *pEx)
     {
         TCHAR szError[255] = { 0 };
-        if (pEx->GetErrorMessage(szError, 255))
-            WRITE_LOG_ERROR(szError);
+		if (pEx->GetErrorMessage(szError, 255))
+			SetLastErrMsg(szError);
         else
-            WRITE_LOG_ERROR("FTP unknown exception");
+			SetLastErrMsg("FTP unknown exception");
         pEx->Delete();
         return false;
     }
@@ -74,7 +73,7 @@ bool FtpConnector::SetCurrentDir(CString strDirPath)
 {
     if (!m_pConnection)
     {
-        WRITE_LOG_ERROR("m_pConnection is NULL");
+		SetLastErrMsg("m_pConnection is NULL");
         return false;
     }
 
@@ -82,16 +81,40 @@ bool FtpConnector::SetCurrentDir(CString strDirPath)
     if (0 == bRet)
     {
         DWORD dwErrCode = ::GetLastError();
-        WRITE_LOG_ERROR("Set current dir failed, err code: %d", dwErrCode);
+        TCHAR szError[256] = { 0 };
+		DWORD dwErrorSize = 256;
         if (ERROR_INTERNET_EXTENDED_ERROR == dwErrCode)
         {
-            TCHAR szError[256] = { 0 };
-            DWORD dwLastErrorMsg, dwErrorSize = 256;
+            DWORD dwLastErrorMsg;
             InternetGetLastResponseInfo(&dwLastErrorMsg, szError, &dwErrorSize);
-            WRITE_LOG_ERROR(szError);
         }
+		SetLastErrMsg(_T("Set current dir failed, err code: %d, err msg: %s"), dwErrCode, szError);
         return false;
     }
     m_strFtpCurrentDir = strDirPath;
     return true;
 }
+
+void FtpConnector::SetLastErrMsg(const char* szFormat, ...)
+{
+	va_list argList;
+	va_start(argList, szFormat);
+	::vsprintf(m_szLastErrMsg, szFormat, argList);
+	va_end(argList);
+}
+
+void FtpConnector::SetLastErrMsg(const wchar_t* wszFormat /*= L"OK"*/, ...)
+{
+	wchar_t wcBuff[1024] = { 0 };
+	va_list argList;
+	va_start(argList, wszFormat);	
+	::vswprintf(wcBuff, wszFormat, argList);
+	va_end(argList);
+
+	char* pszErrMsg = NULL;
+	char* pBuff = StringUtils::StrConv_W2A(wszFormat, pszErrMsg);
+	SetLastErrMsg(pBuff);
+	delete[] pBuff;
+}
+
+

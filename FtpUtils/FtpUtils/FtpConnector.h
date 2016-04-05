@@ -36,7 +36,9 @@ public:
     */
     bool SetCurrentDir(CString strDirPath);
 
-    
+	// 获取错误信息
+	const char* GetLastErrMsg();	
+
 public:
     /*
     ** FtpConnector的构造函数
@@ -46,11 +48,17 @@ public:
     FtpConnector(const TCHAR* szSessionName, DWORD dwDelay = 5000);
     ~FtpConnector();
 
+	void SetLastErrMsg(const char* szFormat = "OK", ...);
+	void SetLastErrMsg(const wchar_t* wszFormat = L"OK", ...);
+
 private:
     CInternetSession m_objSession;
     CFtpConnection* m_pConnection;
     CString m_strFtpRootDir;
     CString m_strFtpCurrentDir;
+
+	static const int LASTERRMSG_LENGTH = 1024;
+	char m_szLastErrMsg[LASTERRMSG_LENGTH];
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -69,4 +77,9 @@ inline CString FtpConnector::GetFtpRootDir()
 inline CString FtpConnector::GetFtpCurrentDir()
 {
     return m_strFtpCurrentDir;
+}
+
+inline const char* FtpConnector::GetLastErrMsg()
+{
+	return m_szLastErrMsg;
 }

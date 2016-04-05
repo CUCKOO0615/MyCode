@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #define  EXPORT_STDC
 #include "FtpUtils_ExportC.h"
-#include "LogUtils.hpp"
 #include "StringUtils.h"
 #include "CStringUtils.h"
 #include "FtpConnector.h"
@@ -19,20 +18,18 @@ CK_API void CkFtpUtils::ReleaseFtpConnector(FtpConnector* pFtpConn)
         delete pFtpConn;
 }
 
-CK_API bool CkFtpUtils::ConnectFtp(FtpConnector* pConnector, const char* szIP, unsigned short usPort /*= 21*/, const char* szUserName /*= "anonymous"*/, const char* szPassword /*= ""*/)
+CK_API bool CkFtpUtils::ConnectFtp(FtpConnector* pConnector, 
+	const char* szIP, unsigned short usPort /*= 21*/, 
+	const char* szUserName /*= "anonymous"*/, const char* szPassword /*= ""*/)
 {
-    if (!pConnector)
-    {
-        WRITE_LOG_ERROR("Param FtpConnector* is null, func: ConnectFtp");
-        return false;
-    }
+	ASSERT(pConnector);
     return pConnector->CreateFtpConnection(szIP, usPort, szUserName, szPassword);
 }
 
-CK_API int CkFtpUtils::FtpTry2SetCurDir(FtpConnector* pConnector, const char* szRemotePath, bool bUtf8Path)
+CK_API int CkFtpUtils::FtpTry2SetCurDir(FtpConnector* pConnector, 
+	const char* szRemotePath, bool bUtf8Path)
 {
-    if (!pConnector)
-        return 1;
+	ASSERT(pConnector);
 
     if (!szRemotePath || !strlen(szRemotePath))
         szRemotePath = "/";
@@ -54,8 +51,8 @@ CK_API int CkFtpUtils::FtpTry2SetCurDir(FtpConnector* pConnector, const char* sz
         char* szUtf8 = StringUtils::StrConv_T2UTF8(strRemotePath, pszErrMsg);
         if (!szUtf8)
         {
-            WRITE_LOG_ERROR("Convert to UTF8 failed, err msg: %s", pszErrMsg);
-            return 2;
+			pConnector->SetLastErrMsg("Convert to UTF8 failed, err msg: %s", pszErrMsg);
+            return 1;
         }
         strRemotePath = szUtf8;
         delete[] szUtf8;
@@ -63,13 +60,15 @@ CK_API int CkFtpUtils::FtpTry2SetCurDir(FtpConnector* pConnector, const char* sz
 
     //测试服务器路径
     if (!pConnector->SetCurrentDir(strRemotePath))
-        return 3;
+        return 2;
     return 0;
 }
 
 CK_API int CkFtpUtils::FtpRemoveFile(FtpConnector* pConnector,
     const char* szRemotePath, const char* szFileName, bool bUtf8Path)
 {
+	ASSERT(pConnector);
+
     if (!szRemotePath || !strlen(szRemotePath))
         szRemotePath = "/";
     CString strRemotePath = CStringUtils::StrConv_cstr2CStringT(szRemotePath);
@@ -78,9 +77,6 @@ CK_API int CkFtpUtils::FtpRemoveFile(FtpConnector* pConnector,
     if (!szFileName)
         szFileName = "";
     CString strFileName = CStringUtils::StrConv_cstr2CStringT(szFileName);
-
-    if (!pConnector)
-        return 1;
 
     //处理管理员未锁定用户根目录的情况
     CString strFtpRootDir = pConnector->GetFtpRootDir();
@@ -97,16 +93,16 @@ CK_API int CkFtpUtils::FtpRemoveFile(FtpConnector* pConnector,
         CkPtrUtils::PtrScopeGuard<char> pag1(&szUtf8RemotePath, true);
         if (!szUtf8RemotePath)
         {
-            WRITE_LOG_ERROR("Convert remotepath to UTF8 failed, err msg: %s", pszErrMsg);
-            return 2;
+			pConnector->SetLastErrMsg("Convert remotepath to UTF8 failed, err msg: %s", pszErrMsg);
+            return 1;
         }
 
         char* szUtf8FileName = StringUtils::StrConv_T2UTF8(strFileName, pszErrMsg);
         CkPtrUtils::PtrScopeGuard<char> pag2(&szUtf8FileName, true);
         if (!szUtf8FileName)
         {
-            WRITE_LOG_ERROR("Convert filename to UTF8 failed, err msg: %s", pszErrMsg);
-            return 2;
+			pConnector->SetLastErrMsg("Convert filename to UTF8 failed, err msg: %s", pszErrMsg);
+			return 1;
         }
         strRemotePath = szUtf8RemotePath;
         strFileName = szUtf8FileName;
@@ -114,21 +110,29 @@ CK_API int CkFtpUtils::FtpRemoveFile(FtpConnector* pConnector,
 
     //设置服务器路径
     if (!pConnector->SetCurrentDir(strRemotePath))
-        return 3;
+        return 2;
 
     if (0 == pConnector->GetConnection()->Remove(strFileName))
     {
         DWORD dwErrCode = ::GetLastError();
+		pConnector->SetLastErrMsg("Delete specified file failed, filename: %s, errcode: %d", 	
+			szFileName, dwErrCode);
+
+		TCHAR szError[256] = { 0 };
+		DWORD dwErrorSize = 256;
         if (ERROR_INTERNET_EXTENDED_ERROR == dwErrCode)
         {
-            TCHAR szError[256] = { 0 };
-            DWORD dwLastErrorMsg, dwErrorSize = 256;
+            DWORD dwLastErrorMsg;
             InternetGetLastResponseInfo(&dwLastErrorMsg, szError, &dwErrorSize);
-            WRITE_LOG_ERROR(szError);
+			pConnector->SetLastErrMsg(_T("Delete specified file failed, errmsg: %s"), szError);
         }
-        WRITE_LOG_ERROR("Delete specified file failed, filename: %s, error code: %d", szFileName, dwErrCode);
-        return 4;
+        return 3;
     }
     return 0;
+}
+
+CK_API const char* CkFtpUtils::GetLastErrMsg(FtpConnector* pConnector)
+{
+	return pConnector->GetLastErrMsg();
 }
 
