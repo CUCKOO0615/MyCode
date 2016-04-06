@@ -95,6 +95,7 @@ bool FtpConnector::SetCurrentDir(CString strDirPath)
     return true;
 }
 
+//////////////////////////////////////////////////////////////////////////
 void FtpConnector::SetLastErrMsg(const char* szFormat, ...)
 {
 	va_list argList;

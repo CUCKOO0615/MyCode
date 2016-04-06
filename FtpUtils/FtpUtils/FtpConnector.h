@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning(disable:4099)
 //************************************************
 //°ÛAuthor: CUCKOO0615
 //°ÛDate: 2016/03/30
