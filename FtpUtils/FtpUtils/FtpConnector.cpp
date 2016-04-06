@@ -9,7 +9,7 @@
 FtpConnector::FtpConnector(const TCHAR* szSessionName, DWORD dwDelay)
 :m_objSession(szSessionName), m_pConnection(NULL)
 {
-	::memset(m_szLastErrMsg, 0, LASTERRMSG_LENGTH);
+    SetLastErrMsg();
     m_objSession.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, dwDelay);
     m_objSession.SetOption(INTERNET_OPTION_SEND_TIMEOUT, dwDelay);
     m_objSession.SetOption(INTERNET_OPTION_RECEIVE_TIMEOUT, dwDelay);
@@ -25,19 +25,14 @@ FtpConnector::~FtpConnector()
     m_objSession.Close();
 }
 
-bool FtpConnector::CreateFtpConnection(
-    const char* szIP, unsigned short usPort,
-    const char* szUserName, const char* szPassword)
-{
-    CString strIP = CStringUtils::StrConv_cstr2CStringT(szIP);
-    CString strUserName = CStringUtils::StrConv_cstr2CStringT(szUserName);
-    CString strPassword = CStringUtils::StrConv_cstr2CStringT(szPassword);
 
-    //连接FTP服务器
+bool FtpConnector::CreateFtpConnection(LPCSTR szIP, USHORT usPort, LPCSTR szUserName, LPCSTR szPassword)
+{
+    SetLastErrMsg();
     try
     {
         m_pConnection = m_objSession.GetFtpConnection(
-            strIP, strUserName, strPassword, (INTERNET_PORT)usPort,
+            szIP, szUserName, szPassword, (INTERNET_PORT)usPort,
             FALSE); //该函数操作失败会直接抛异常,不需要检查返回值
 
         if (!m_pConnection->GetCurrentDirectory(m_strFtpRootDir))
@@ -47,19 +42,21 @@ bool FtpConnector::CreateFtpConnection(
 			SetLastErrMsg("Get FTP current dir failed, err code:%d", ::GetLastError());
             return false;
         }
-#ifdef UNICODE
-        //UNICODE下该字符串末尾会有两个L'\0',导致长度检测+1,影响字符串拼加
-        m_strFtpRootDir.Delete(m_strFtpRootDir.GetLength() - 1, 1);
-#endif // UNICODE
-        if (_T('/') != m_strFtpRootDir[m_strFtpRootDir.GetLength() - 1] &&
-            _T('\\') != m_strFtpRootDir[m_strFtpRootDir.GetLength() - 1])
-            m_strFtpRootDir += _T("/");
+        if ("/" == m_strFtpRootDir || "\\" == m_strFtpRootDir || m_strFtpRootDir.IsEmpty())
+        {
+            m_strFtpRootDir = "/";
+            return true;
+        }        
+        int nLastIndex = m_strFtpRootDir.GetLength() - 1;
+        if ('/' != m_strFtpRootDir[nLastIndex] && 
+            '\\' != m_strFtpRootDir[nLastIndex])
+            m_strFtpRootDir += "/";
         m_strFtpCurrentDir = m_strFtpRootDir;
         return true;
     }
     catch (CInternetException *pEx)
     {
-        TCHAR szError[255] = { 0 };
+        char szError[255] = { 0 };
 		if (pEx->GetErrorMessage(szError, 255))
 			SetLastErrMsg(szError);
         else
@@ -69,29 +66,32 @@ bool FtpConnector::CreateFtpConnection(
     }
 }
 
-bool FtpConnector::SetCurrentDir(CString strDirPath)
+bool FtpConnector::SetCurrentDirectory(LPCSTR szDirPath)
 {
+    SetLastErrMsg();
     if (!m_pConnection)
     {
 		SetLastErrMsg("m_pConnection is NULL");
         return false;
     }
+    if (!szDirPath)
+        szDirPath = "/";
 
-    BOOL bRet = m_pConnection->SetCurrentDirectory(strDirPath);
-    if (0 == bRet)
+    if (!m_pConnection->SetCurrentDirectory(szDirPath))
     {
         DWORD dwErrCode = ::GetLastError();
         TCHAR szError[256] = { 0 };
-		DWORD dwErrorSize = 256;
+
         if (ERROR_INTERNET_EXTENDED_ERROR == dwErrCode)
         {
             DWORD dwLastErrorMsg;
+		DWORD dwErrorSize = 256;
             InternetGetLastResponseInfo(&dwLastErrorMsg, szError, &dwErrorSize);
         }
-		SetLastErrMsg(_T("Set current dir failed, err code: %d, err msg: %s"), dwErrCode, szError);
+		SetLastErrMsg("%s, err code: %d", szError, dwErrCode);
         return false;
     }
-    m_strFtpCurrentDir = strDirPath;
+    m_strFtpCurrentDir = szDirPath;
     return true;
 }
 
@@ -102,20 +102,6 @@ void FtpConnector::SetLastErrMsg(const char* szFormat, ...)
 	va_start(argList, szFormat);
 	::vsprintf(m_szLastErrMsg, szFormat, argList);
 	va_end(argList);
-}
-
-void FtpConnector::SetLastErrMsg(const wchar_t* wszFormat /*= L"OK"*/, ...)
-{
-	wchar_t wcBuff[1024] = { 0 };
-	va_list argList;
-	va_start(argList, wszFormat);	
-	::vswprintf(wcBuff, wszFormat, argList);
-	va_end(argList);
-
-	char* pszErrMsg = NULL;
-	char* pBuff = StringUtils::StrConv_W2A(wszFormat, pszErrMsg);
-	SetLastErrMsg(pBuff);
-	delete[] pBuff;
 }
 
 

@@ -18,22 +18,24 @@ public:
     ** @Param szPassword: 默认为空
     ** @Ret : 创建成功返回true,失败返回false,错误信息见日志文件
     */
-    bool CreateFtpConnection(
-        const char* szIP, unsigned short usPort = 21, 
-        const char* szUserName = "anonymous", const char* szPassword="");
-    
-    // 获取由CreateFtpConnection创建的FTP连接对象指针
-    CFtpConnection* GetConnection();
-    
-    //获取当前会话用户根目录
-    CString GetFtpRootDir();
+    bool CreateFtpConnection(LPCSTR szIP, USHORT usPort = 21, LPCSTR szUserName = "anonymous", LPCSTR szPassword = "");
 
     /*
     ** 设置当前会话用户当前目录
     ** @Param strDirPath: 相对路径 
     ** @Ret : 成功返回true,失败返回false,错误信息见日志文件
     */
-    bool SetCurrentDir(CString strDirPath);
+    bool SetCurrentDirectory(LPCSTR szDirPath);
+
+
+
+    // 获取由CreateFtpConnection创建的FTP连接对象指针
+    CFtpConnection* GetConnection();
+    
+    //获取当前会话用户根目录
+    CString GetFtpRootDir();
+
+
 
     //获取当前会话用户当前目录
     CString GetFtpCurrentDir();
@@ -51,7 +53,6 @@ public:
     ~FtpConnector();
 
 	void SetLastErrMsg(const char* szFormat = "OK", ...);
-	void SetLastErrMsg(const wchar_t* wszFormat = L"OK", ...);
 
 private:
     CInternetSession m_objSession;

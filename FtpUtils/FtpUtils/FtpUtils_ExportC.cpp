@@ -59,7 +59,7 @@ CK_API int CkFtpUtils::FtpTry2SetCurDir(FtpConnector* pConnector,
     }
 
     //测试服务器路径
-    if (!pConnector->SetCurrentDir(strRemotePath))
+    if (!pConnector->SetCurrentDirectory(strRemotePath))
         return 2;
     return 0;
 }
@@ -109,7 +109,7 @@ CK_API int CkFtpUtils::FtpRemoveFile(FtpConnector* pConnector,
     }
 
     //设置服务器路径
-    if (!pConnector->SetCurrentDir(strRemotePath))
+    if (!pConnector->SetCurrentDirectory(strRemotePath))
         return 2;
 
     if (0 == pConnector->GetConnection()->Remove(strFileName))
