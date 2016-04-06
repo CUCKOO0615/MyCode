@@ -137,7 +137,7 @@ void StringUtils::TrimLeft(char * szStr, size_t nBufSize, char chSpilter /*= ' '
         return;
 
     char* szTmp = new char[nBufSize];
-    memcpy(szTmp, szStr, nBufSize);
+    ::memcpy(szTmp, szStr, nBufSize);
 
     size_t nStrLength = strlen(szTmp);
     size_t nCheck = min(nStrLength, nBufSize);

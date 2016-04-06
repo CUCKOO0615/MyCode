@@ -22,23 +22,24 @@ public:
         const char* szIP, unsigned short usPort = 21, 
         const char* szUserName = "anonymous", const char* szPassword="");
     
-    /*
-    ** 获取由CreateFtpConnection创建的FTP连接对象指针
-    */
+    // 获取由CreateFtpConnection创建的FTP连接对象指针
     CFtpConnection* GetConnection();
-
+    
+    //获取当前会话用户根目录
     CString GetFtpRootDir();
-    CString GetFtpCurrentDir();
 
     /*
-    ** 设置服务器当前目录
+    ** 设置当前会话用户当前目录
     ** @Param strDirPath: 相对路径 
     ** @Ret : 成功返回true,失败返回false,错误信息见日志文件
     */
     bool SetCurrentDir(CString strDirPath);
 
+    //获取当前会话用户当前目录
+    CString GetFtpCurrentDir();
+
 	// 获取错误信息
-	const char* GetLastErrMsg();	
+    const char* GetLastErrMsg();
 
 public:
     /*
