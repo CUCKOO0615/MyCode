@@ -1,4 +1,9 @@
 #pragma once
+//************************************************
+//◇Author: CUCKOO0615
+//◇Date: 2016/03/30
+//◇Comment: 创建FTP连接(C导出接口)
+//************************************************
 
 #ifdef EXPORT_STDC
 #define CK_API extern "C" __declspec(dllexport)
@@ -38,37 +43,36 @@ namespace CkFtpUtils
     ** @Param usPort: 服务器端口,设为NULL时默认21
     ** @Param szUserName: 用户名,设为NULL时默认anonymous
     ** @Param szPassword: 密码
+	** @Param bEnableUtf8: 如果服务器端使用UTF8编码,则该参数应置为true
     ** @Ret : 连接成功返回true,失败返回false
     */
     CK_API bool ConnectFtp(FtpConnector* pConnector, 
 		const char* szIP, unsigned short usPort = 21,
-        const char* szUserName = "anonymous", const char* szPassword = "");
+        const char* szUserName = "anonymous", const char* szPassword = "",
+		bool bEnableUtf8 = false);
     
-    /*
-    ** 尝试设定FTP服务器当前目录
-    ** @Param pConnector: 有效的FtpConnector对象
-    ** @Param szRemotePath: 远程路径,设为NULL或""时默认为"/"
-    ** @Param bUtf8Path: 是否启用UTF8编码发送字节流
-    ** @Ret : 参见以下返回值
-    // 0 Successful
-    // 1 UTF8 Convert failed
-    // 2 Set FTP Server's current dir failed
-    */
-    CK_API int FtpTry2SetCurDir(FtpConnector* pConnector,  
-		const char* szRemotePath, bool bUtf8Path);
-    
+	/*
+	** 设置当前会话用户当前目录
+	** @Param pConnector: 有效的FtpConnector对象
+	** @Param strDirPath: 相对路径
+	** @Ret : 成功返回true,失败返回false
+	*/
+	CK_API bool SetFtpCurrentDir(FtpConnector* pConnector, const char* szDirPath);
+	
+	/*
+	** 获取当前会话用户当前目录
+	** @Param pConnector: 有效的FtpConnector对象
+	** @Ret: 操作成功返回服务器端当前目录,操作失败返回"ERROR"
+	*/
+	CK_API const char* GetFtpCurrentDir(FtpConnector* pConnector);
+
     /*
     ** 删除服务器上的文件
     ** @Param pConnector: 有效的FtpConnector对象
     ** @Param szRemotePath: 远程路径,设为NULL或""时默认为"/"
     ** @Param szFileName: 文件名
-    ** @Param bUtf8Path: 是否启用UTF8编码发送字节流
-    ** @Ret : 
-    // 0 Successful
-    // 1 UTF8 Convert failed
-    // 2 Set FTP Server's current dir failed
-    // 3 Remove file failed
+    ** @Ret : 操作成功返回true，失败返回false
     */
-    CK_API int FtpRemoveFile(FtpConnector* pConnector, 
-        const char* szRemotePath, const char* szFileName, bool bUtf8Path);
+    CK_API bool FtpRemoveFile(FtpConnector* pConnector, const char* szRemotePath, const char* szFileName);
 }
+

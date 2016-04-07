@@ -16,6 +16,7 @@ public:
     ** @Param usPort: 端口号,默认21
     ** @Param szUserName: 用户名,默认anonymous(匿名用户)
     ** @Param szPassword: 默认为空
+	** @Param bEnableUtf8: 如果服务器端使用UTF8编码,则该参数应置为true
     ** @Ret : 创建成功返回true,失败返回false
     */
     bool CreateFtpConnection
@@ -23,26 +24,35 @@ public:
         LPCSTR szUserName = "anonymous", LPCSTR szPassword = "",
         bool bEnableUtf8 = false);
 
-    CString GetCurrentDirectory();
+    /*
+    ** 获取当前会话用户当前目录
+    ** @Ret: 操作成功返回服务器端当前目录,操作失败返回"ERROR"
+    */
+	LPCSTR GetFtpCurrentDir();
 
     /*
     ** 设置当前会话用户当前目录
     ** @Param strDirPath: 相对路径 
     ** @Ret : 成功返回true,失败返回false
     */
-    bool SetCurrentDirectory(LPCSTR szDirPath);
-    
+    bool SetFtpCurrentDir(LPCSTR szDirPath);
+
+	/*
+	** 删除服务器上的文件
+	** @Param szRemotePath: 远程路径,设为NULL或""时默认为"/"
+	** @Param szFileName: 文件名
+	** @Ret : 操作成功返回true，失败返回false
+	*/
+	bool FtpRemoveFile(LPCSTR szRemoteDirPath, LPCSTR szFileName);
+	    
     // 获取由CreateFtpConnection创建的FTP连接对象指针
-    CFtpConnection* GetConnection();
+    CFtpConnection* GetConnection() const;
     
     //获取当前会话用户根目录,以'/'结尾
-    CString GetFtpRootDir();
-    
-    //获取当前会话用户当前目录
-    CString GetFtpCurrentDir();
+	CString GetFtpRootDir() const;
 
 	// 获取错误信息
-    const char* GetLastErrMsg();
+	const char* GetLastErrMsg() const;
 
 public:
     /*
@@ -61,29 +71,37 @@ private:
     CString m_strRootDir;
     bool m_bEnableUtf8;
 
+	static const int CURRENTDIR_LENGTH = 1024;
+	char m_szCurrentDir[CURRENTDIR_LENGTH];
+
 	static const int LASTERRMSG_LENGTH = 1024;
 	char m_szLastErrMsg[LASTERRMSG_LENGTH];
+
+	//安全关闭m_pConnection并赋值为NULL
+	void SafeCloseConnection();
 };
 
 //////////////////////////////////////////////////////////////////////////
 //inline
 
-inline CFtpConnection* FtpConnector::GetConnection()
+inline CFtpConnection* FtpConnector::GetConnection() const
 {
     return m_pConnection;
 }
 
-inline CString FtpConnector::GetFtpRootDir()
+inline CString FtpConnector::GetFtpRootDir() const
 {
     return m_strRootDir;
 }
 
-inline CString FtpConnector::GetFtpCurrentDir()
-{
-    return "";
-}
-
-inline const char* FtpConnector::GetLastErrMsg()
+inline const char* FtpConnector::GetLastErrMsg() const
 {
 	return m_szLastErrMsg;
+}
+
+inline void FtpConnector::SafeCloseConnection()
+{
+	if (m_pConnection)
+		m_pConnection->Close();
+	m_pConnection = NULL;
 }
