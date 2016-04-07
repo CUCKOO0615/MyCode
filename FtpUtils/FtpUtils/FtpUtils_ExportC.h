@@ -16,7 +16,7 @@ namespace CkFtpUtils
     ** @Param nDelay: 连接超时时间, 单位:毫秒
     ** @Ret : 创建失败返回NULL
     */
-    CK_API FtpConnector* CreateFtpConnector(const TCHAR* szSessionName, int nDelay = 5000);
+    CK_API FtpConnector* CreateFtpConnector(const char* szSessionName, int nDelay = 5000);
     
     /*
     ** 释放FtpConnector对象
@@ -38,7 +38,7 @@ namespace CkFtpUtils
     ** @Param usPort: 服务器端口,设为NULL时默认21
     ** @Param szUserName: 用户名,设为NULL时默认anonymous
     ** @Param szPassword: 密码
-    ** @Ret : 连接成功返回true,失败返回false,错误信息见日志
+    ** @Ret : 连接成功返回true,失败返回false
     */
     CK_API bool ConnectFtp(FtpConnector* pConnector, 
 		const char* szIP, unsigned short usPort = 21,

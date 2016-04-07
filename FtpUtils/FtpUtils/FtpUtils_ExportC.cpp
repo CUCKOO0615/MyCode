@@ -6,7 +6,7 @@
 #include "FtpConnector.h"
 #include "PtrUtils.hpp"
 
-CK_API FtpConnector* CkFtpUtils::CreateFtpConnector(const TCHAR* szSessionName, int nDelay /*= 5000*/)
+CK_API FtpConnector* CkFtpUtils::CreateFtpConnector(const char* szSessionName, int nDelay /*= 5000*/)
 {
     FtpConnector* pRet = new FtpConnector(szSessionName, nDelay);
     return pRet;
@@ -16,6 +16,11 @@ CK_API void CkFtpUtils::ReleaseFtpConnector(FtpConnector* pFtpConn)
 {
     if(pFtpConn)
         delete pFtpConn;
+}
+
+CK_API const char* CkFtpUtils::GetLastErrMsg(FtpConnector* pConnector)
+{
+    return pConnector->GetLastErrMsg();
 }
 
 CK_API bool CkFtpUtils::ConnectFtp(FtpConnector* pConnector, 
@@ -30,19 +35,13 @@ CK_API int CkFtpUtils::FtpTry2SetCurDir(FtpConnector* pConnector,
 	const char* szRemotePath, bool bUtf8Path)
 {
 	ASSERT(pConnector);
-
     if (!szRemotePath || !strlen(szRemotePath))
         szRemotePath = "/";
-    CString strRemotePath = CStringUtils::StrConv_cstr2CStringT(szRemotePath);
-    if (_T('/') != strRemotePath[0] && _T('\\') != strRemotePath[0])
-        strRemotePath = _T("/") + strRemotePath;
-    
+            
     //处理管理员未锁定用户根目录的情况
-    CString strFtpRootDir = pConnector->GetFtpRootDir();
-    if (_T("\\") != strFtpRootDir && _T("/") != strFtpRootDir)
-        strRemotePath = (strFtpRootDir + strRemotePath);
-    strRemotePath.Replace(_T("//"), _T("/"));
-    strRemotePath.Replace(_T("\\\\"), _T("\\"));
+    CString strRemotePath = pConnector->GetFtpRootDir() + CString(szRemotePath);
+    strRemotePath.Replace("//", "/");
+    strRemotePath.Replace("\\\\", "\\");
 
     //UTF8转码
     if (bUtf8Path)
@@ -59,7 +58,7 @@ CK_API int CkFtpUtils::FtpTry2SetCurDir(FtpConnector* pConnector,
     }
 
     //测试服务器路径
-    if (!pConnector->SetCurrentDirectory(strRemotePath))
+    if (!pConnector->SetCurrentDirectory(strRemotePath.GetBuffer(0)))
         return 2;
     return 0;
 }
@@ -131,8 +130,5 @@ CK_API int CkFtpUtils::FtpRemoveFile(FtpConnector* pConnector,
     return 0;
 }
 
-CK_API const char* CkFtpUtils::GetLastErrMsg(FtpConnector* pConnector)
-{
-	return pConnector->GetLastErrMsg();
-}
+
 

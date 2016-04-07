@@ -16,7 +16,7 @@ int _tmain(int argc, _TCHAR* argv[])
         return 1;
     }
 
-    int n1 = CkFtpUtils::FtpRemoveFile(p, "/", "1.txt",false);
+    CkFtpUtils::FtpTry2SetCurDir(p, "/梁中原", true);
 
     CkFtpUtils::ReleaseFtpConnector(p);
     //CkFtpUtils::FtpTest("114.215.99.219", 21, "FtpTestUser", "APTX4869", "/梁中原", true);

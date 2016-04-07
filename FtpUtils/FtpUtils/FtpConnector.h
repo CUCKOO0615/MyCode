@@ -16,27 +16,28 @@ public:
     ** @Param usPort: 端口号,默认21
     ** @Param szUserName: 用户名,默认anonymous(匿名用户)
     ** @Param szPassword: 默认为空
-    ** @Ret : 创建成功返回true,失败返回false,错误信息见日志文件
+    ** @Ret : 创建成功返回true,失败返回false
     */
-    bool CreateFtpConnection(LPCSTR szIP, USHORT usPort = 21, LPCSTR szUserName = "anonymous", LPCSTR szPassword = "");
+    bool CreateFtpConnection
+        (LPCSTR szIP, USHORT usPort = 21,
+        LPCSTR szUserName = "anonymous", LPCSTR szPassword = "",
+        bool bEnableUtf8 = false);
+
+    CString GetCurrentDirectory();
 
     /*
     ** 设置当前会话用户当前目录
     ** @Param strDirPath: 相对路径 
-    ** @Ret : 成功返回true,失败返回false,错误信息见日志文件
+    ** @Ret : 成功返回true,失败返回false
     */
     bool SetCurrentDirectory(LPCSTR szDirPath);
-
-
-
+    
     // 获取由CreateFtpConnection创建的FTP连接对象指针
     CFtpConnection* GetConnection();
     
-    //获取当前会话用户根目录
+    //获取当前会话用户根目录,以'/'结尾
     CString GetFtpRootDir();
-
-
-
+    
     //获取当前会话用户当前目录
     CString GetFtpCurrentDir();
 
@@ -49,7 +50,7 @@ public:
     ** @Param szSessionName: CInternetSession会话名称
     ** @Param dwDelay: 连接超时时间,单位:毫秒,默认5000
     */
-    FtpConnector(const TCHAR* szSessionName, DWORD dwDelay = 5000);
+    FtpConnector(LPCSTR szSessionName, DWORD dwDelay = 5000);
     ~FtpConnector();
 
 	void SetLastErrMsg(const char* szFormat = "OK", ...);
@@ -57,8 +58,8 @@ public:
 private:
     CInternetSession m_objSession;
     CFtpConnection* m_pConnection;
-    CString m_strFtpRootDir;
-    CString m_strFtpCurrentDir;
+    CString m_strRootDir;
+    bool m_bEnableUtf8;
 
 	static const int LASTERRMSG_LENGTH = 1024;
 	char m_szLastErrMsg[LASTERRMSG_LENGTH];
@@ -74,12 +75,12 @@ inline CFtpConnection* FtpConnector::GetConnection()
 
 inline CString FtpConnector::GetFtpRootDir()
 {
-    return m_strFtpRootDir;
+    return m_strRootDir;
 }
 
 inline CString FtpConnector::GetFtpCurrentDir()
 {
-    return m_strFtpCurrentDir;
+    return "";
 }
 
 inline const char* FtpConnector::GetLastErrMsg()
