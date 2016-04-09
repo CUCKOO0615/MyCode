@@ -48,6 +48,9 @@
     <ClInclude Include="ThreadUtils.hpp">
       <Filter>Tools</Filter>
     </ClInclude>
+    <ClInclude Include="PathUtils.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -61,6 +64,9 @@
     </ClCompile>
     <ClCompile Include="LogUtils_ExportC.cpp">
       <Filter>LogUtils_ExportC</Filter>
+    </ClCompile>
+    <ClCompile Include="PathUtils.cpp">
+      <Filter>Tools</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

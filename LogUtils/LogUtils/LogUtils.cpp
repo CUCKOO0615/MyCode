@@ -3,6 +3,8 @@
 #include "stdafx.h"
 #include "LogUtils.h"
 #include "Common.h"
+#include "PathUtils.h"
+#include <algorithm>
 
 #define LOGINDEX_MAX 99999999
 
@@ -38,22 +40,23 @@ bool LogUtils::InitLogUtils(
 	if (!CkCommon::CreateMultiDir(szDirPath) || 0 != ::_access(szDirPath, 0))
         return false;
 
-    m_strLogPath = szDirPath;
-	if ('\\' != *(m_strLogPath.end() - 1) && '/' != *(m_strLogPath.end() - 1))
-		m_strLogPath += '\\';
+    m_strLogFilePath = szDirPath;
+	m_strLogDirPath = szDirPath;
+	if ('\\' != *(m_strLogFilePath.end() - 1) && '/' != *(m_strLogFilePath.end() - 1))
+		m_strLogFilePath += '\\';
 
-	m_strLogPath += szLogNamePrefix;
+	m_strLogFilePath += szLogNamePrefix;
 
 	char szTime[256] = { 0 };
 	CkCommon::FormatTime2Str(szTime, 256, "_%Y-%m-%d");
-	m_strLogPath += szTime;
+	m_strLogFilePath += szTime;
     
 	if (nMaxFileSize)
 	{
 		m_nFileMaxSize = nMaxFileSize;
-		m_strLogPath += "_00000000";
+		m_strLogFilePath += "_00000000";
 	}
-	m_strLogPath += ".txt";
+	m_strLogFilePath += ".txt";
 
 	m_bSwitchFileByDate = bSwitchFileByDate;
 
@@ -115,7 +118,7 @@ void LogUtils::Recording(LOG_LEVEL emLL, const char* szRec, va_list argsList)
 	CkCommon::FormatTime2Str(szCurTime, 100, "%Y/%m/%d %H:%M:%S");
 
 	SyncLockGuard slg(&m_slSyncLock);
-    m_pLogFile = ::fopen(m_strLogPath.c_str(), "a+");
+    m_pLogFile = ::fopen(m_strLogFilePath.c_str(), "a+");
     if (m_pLogFile)
     {
 		::fprintf(m_pLogFile, " [%s %s]: ", szCurTime, arrLogLevel[emLL]);
@@ -132,7 +135,7 @@ void LogUtils::SperateLine(char ch/* = '-'*/)
 	::memset(tmpBuf, ch, 60);
 
 	SyncLockGuard slg(&m_slSyncLock);
-    m_pLogFile = ::fopen(m_strLogPath.c_str(), "a+");
+    m_pLogFile = ::fopen(m_strLogFilePath.c_str(), "a+");
     if (m_pLogFile)
     {
         ::fprintf(m_pLogFile, "%s\n", tmpBuf);
@@ -151,6 +154,7 @@ unsigned int __stdcall LogUtils::SwitchLogFile_ThreadEntry(void* pParam)
 	{
 		pThis->SwitchLogFileByFileSize();
 		pThis->SwitchLogFileByDate();
+		pThis->AutoDeleteHistoryLogs();
 		::Sleep(5000);
 	}
 	return 0;
@@ -161,7 +165,7 @@ void LogUtils::SwitchLogFileByFileSize()
 	if (!m_isInited || !m_nFileMaxSize)
 		return;
 
-	const char* m_szLogPath = m_strLogPath.c_str();
+	const char* m_szLogPath = m_strLogFilePath.c_str();
 	if (0 != ::_access(m_szLogPath, 0))
 		return;
 
@@ -179,12 +183,12 @@ void LogUtils::SwitchLogFileByFileSize()
 		char numBuf[16] = { 0 };
 		::sprintf(numBuf, "%08d.txt", m_nLogIndex);
 
-		size_t nPos = m_strLogPath.rfind('_');
+		size_t nPos = m_strLogFilePath.rfind('_');
 		if (std::string::npos == nPos)
 			return;
 
 		SyncLockGuard slg(&m_slSyncLock);
-		m_strLogPath.replace(m_strLogPath.begin() + nPos + 1, m_strLogPath.end(), numBuf);
+		m_strLogFilePath.replace(m_strLogFilePath.begin() + nPos + 1, m_strLogFilePath.end(), numBuf);
 	}
 }
 
@@ -193,7 +197,7 @@ void LogUtils::SwitchLogFileByDate()
 	if (!m_isInited || !m_bSwitchFileByDate)
  		return;
 	
-	int nPos = m_strLogPath.rfind('_');
+	int nPos = m_strLogFilePath.rfind('_');
 	if (std::string::npos == nPos)
 		return;
 
@@ -201,13 +205,13 @@ void LogUtils::SwitchLogFileByDate()
 	int nPosEnd = nPos--;
 	for (; nPos > 0; --nPos)
 	{
-		if ('_' == m_strLogPath[nPos])
+		if ('_' == m_strLogFilePath[nPos])
 		{
 			nPosBeg = nPos;
 			break;
 		}
 	}
-	std::string strOldTime(m_strLogPath.begin() + nPosBeg, m_strLogPath.begin() + nPosEnd);
+	std::string strOldTime(m_strLogFilePath.begin() + nPosBeg, m_strLogFilePath.begin() + nPosEnd);
 
 	//判断是否是当天的Log
 	char szTime[256] = { 0 };
@@ -217,10 +221,28 @@ void LogUtils::SwitchLogFileByDate()
 
 	SyncLockGuard slg(&m_slSyncLock);
 	m_nLogIndex = 0;
-	m_strLogPath.replace(m_strLogPath.begin()+nPosBeg, m_strLogPath.end(), szTime);
+	m_strLogFilePath.replace(m_strLogFilePath.begin()+nPosBeg, m_strLogFilePath.end(), szTime);
 	if (m_nFileMaxSize)
-		m_strLogPath += "_00000000";
-	m_strLogPath += ".txt";
+		m_strLogFilePath += "_00000000";
+	m_strLogFilePath += ".txt";
+}
+
+bool cmpstring(std::string str1, std::string str2){ return str1 > str2; }
+
+void LogUtils::AutoDeleteHistoryLogs()
+{
+	if (!m_isInited)
+		return;
+	PathUtils pu;
+	vector<string> vecLogFiles;
+	pu.GetFilesInDir(vecLogFiles, m_strLogDirPath, "*.txt");
+	int nVecSize = vecLogFiles.size();
+ 	if (nVecSize <= 50)
+		return;
+
+	std::sort(vecLogFiles.begin(), vecLogFiles.end(), cmpstring);
+	for (int i = 50; i != nVecSize; ++i)
+		::DeleteFileA(vecLogFiles[i].c_str());
 }
 
 

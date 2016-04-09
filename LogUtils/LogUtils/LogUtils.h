@@ -64,7 +64,8 @@ private:
 	bool m_isInited;
 
 	FILE * m_pLogFile;
-	std::string m_strLogPath;
+	std::string m_strLogFilePath;
+	std::string m_strLogDirPath;
 	unsigned int m_nFileMaxSize;
 	bool m_bSwitchFileByDate;
 
@@ -78,4 +79,5 @@ private:
 	struct _stat _stuFileState;
 	void SwitchLogFileByFileSize();
 	void SwitchLogFileByDate();
+	void AutoDeleteHistoryLogs();	//自动删除,只保留最近的50个日志文件
 };

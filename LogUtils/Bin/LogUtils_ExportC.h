@@ -50,20 +50,25 @@ namespace CkLogUtils
 		bool bSwitchFileByDate = true,
 		unsigned int nMaxFileSize = 0xA00000 /*10M*/);
 
-	/*
-	** 将指定的字符串写入日志(多字节参数)
-	** @param wszRec: 输出的日志,支持格式化输出
-	*/
+    /*
+    ** 将指定的字符串写入日志(多字节参数)
+    ** @Param p: 有效的LogUtils对象指针
+    ** @Param emLL: LOG_LEVEL枚举/LL_INFO/LL_WARN/LL_ERROR
+    ** @Param szRec: 输出的日志,支持格式化输出
+    */
     CK_API void RecordingA(LogUtils* p, LOG_LEVEL emLL, const char* szRec, ...);
     
 	/*
 	** 将指定的字符串写入日志(宽字节参数)
+	** @Param p: 有效的LogUtils对象指针
+	** @Param emLL: LOG_LEVEL枚举/LL_INFO/LL_WARN/LL_ERROR
 	** @param wszRec: 输出的日志,支持格式化输出
 	*/
     CK_API void RecordingW(LogUtils* p, LOG_LEVEL emLL, const wchar_t* wszRec, ...);
 
 	/*
 	** 输出一条60个字符长的分割线
+	** @Param p: 有效的LogUtils对象指针
 	** @param ch：组成分割线的字符
 	*/
     CK_API void SperateLine(LogUtils* p, char ch = '-');
