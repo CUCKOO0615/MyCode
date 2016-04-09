@@ -52,5 +52,11 @@ CK_API bool CkFtpUtils::FtpRemoveFile(FtpConnector* pConnector, const char* szRe
 	return pConnector->FtpRemoveFile(szRemotePath, szFileName);
 }
 
+CK_API const char* CkFtpUtils::GetFtpRootDir(FtpConnector* pConnector)
+{
+	ASSERT(pConnector);
+	return pConnector->GetFtpRootDir();
+}
+
 
 

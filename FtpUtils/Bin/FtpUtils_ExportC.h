@@ -66,6 +66,13 @@ namespace CkFtpUtils
 	*/
 	CK_API const char* GetFtpCurrentDir(FtpConnector* pConnector);
 
+	/*
+	** 获取当前会话用户根目录
+	** @Param pConnector: 有效的FtpConnector对象
+	** @Ret: 操作成功返回服务器端根目录,,操作失败返回"ERROR"
+	*/
+	CK_API const char* GetFtpRootDir(FtpConnector* pConnector);
+
     /*
     ** 删除服务器上的文件
     ** @Param pConnector: 有效的FtpConnector对象
