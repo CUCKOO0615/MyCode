@@ -1,8 +1,8 @@
 #include "StdAfx.h"
-#include "CStringUtils.h"
+#include "StringConvert.h"
 #include "StringUtils.h"
 
-CString CStringUtils::StrConv_cstr2CStringT(const char* szStr)
+CString StringConvert::StrConv_cstr2CStringT(const char* szStr)
 {
     CString strRet;
 #ifdef UNICODE
@@ -16,7 +16,7 @@ CString CStringUtils::StrConv_cstr2CStringT(const char* szStr)
     return strRet;
 }
 
-CStringA CStringUtils::StrConv_TStr2CStringA(const TCHAR* _tszStr)
+CStringA StringConvert::StrConv_TStr2CStringA(const TCHAR* _tszStr)
 {
     CStringA strRet;
 #ifdef UNICODE
@@ -30,7 +30,7 @@ CStringA CStringUtils::StrConv_TStr2CStringA(const TCHAR* _tszStr)
     return strRet;
 }
 
-CStringW CStringUtils::StrConv_TStr2CStringW(const TCHAR* _tszStr)
+CStringW StringConvert::StrConv_TStr2CStringW(const TCHAR* _tszStr)
 {
     CStringW strRet;
 #ifdef UNICODE
@@ -42,4 +42,28 @@ CStringW CStringUtils::StrConv_TStr2CStringW(const TCHAR* _tszStr)
     if (wszStr) delete[] wszStr;
 #endif
     return strRet;
+}
+
+bool StringConvert::StrConv_Utf82A(CStringA& strA, char*& pErr)
+{
+	char* szAnsi = StringUtils::StrConv_Utf82A(strA.GetBuffer(0), pErr);
+	strA.ReleaseBuffer();
+
+	if (!szAnsi)
+		return false;	
+	strA = szAnsi;
+	delete[] szAnsi;
+	return true;
+}
+
+bool StringConvert::StrConv_A2Utf8(CStringA& strA, char*& pErr)
+{
+	char* szUtf8 = StringUtils::StrConv_A2Utf8(strA.GetBuffer(0), pErr);
+	strA.ReleaseBuffer();
+
+	if (!szUtf8)
+		return false;
+	strA = szUtf8;
+	delete[] szUtf8;
+	return true;
 }

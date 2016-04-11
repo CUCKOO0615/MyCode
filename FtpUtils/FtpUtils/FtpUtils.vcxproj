@@ -106,7 +106,7 @@ copy FtpUtils_ExportC.h ..\Bin\FtpUtils_ExportC.h</Command>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CStringUtils.cpp" />
+    <ClCompile Include="StringConvert.cpp" />
     <ClCompile Include="FtpConnector.cpp" />
     <ClCompile Include="FtpUtils.cpp" />
     <ClCompile Include="FtpUtils_ExportC.cpp" />
@@ -120,7 +120,7 @@ copy FtpUtils_ExportC.h ..\Bin\FtpUtils_ExportC.h</Command>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CStringUtils.h" />
+    <ClInclude Include="StringConvert.h" />
     <ClInclude Include="FtpConnector.h" />
     <ClInclude Include="FtpUtils.h" />
     <ClInclude Include="FtpUtils_ExportC.h" />

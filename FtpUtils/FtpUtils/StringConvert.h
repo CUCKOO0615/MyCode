@@ -2,10 +2,10 @@
 //************************************************
 //◇Author: CUCKOO0615
 //◇Date: 2016/03/30
-//◇Comment: CString与C风格字符串互转
+//◇Comment: 字符串转换
 //*************************************************
 
-namespace CStringUtils
+namespace StringConvert
 {
     // ANSI字符串转CStringT
     CString StrConv_cstr2CStringT(const char* szStr);
@@ -15,5 +15,9 @@ namespace CStringUtils
 
     // TCHAR字符串转CStringW
     CStringW StrConv_TStr2CStringW(const TCHAR* _tszStr);
+
+	//CStringA字符串内部编码转换
+	bool StrConv_Utf82A(CStringA& strA, char*& pErr);
+	bool StrConv_A2Utf8(CStringA& strA, char*& pErr);
 };
 

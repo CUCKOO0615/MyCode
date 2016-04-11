@@ -2,7 +2,7 @@
 #define  EXPORT_STDC
 #include "FtpUtils_ExportC.h"
 #include "StringUtils.h"
-#include "CStringUtils.h"
+#include "StringConvert.h"
 #include "FtpConnector.h"
 #include "PtrUtils.hpp"
 
@@ -56,6 +56,18 @@ CK_API const char* CkFtpUtils::GetFtpRootDir(FtpConnector* pConnector)
 {
 	ASSERT(pConnector);
 	return pConnector->GetFtpRootDir();
+}
+
+CK_API bool CkFtpUtils::FtpDownloadFile(FtpConnector* pConnector,
+	const char* szRemoteFilePath, const char* szLocalFilePath, 
+	bool bFailIfExist, 
+	unsigned long ulAttributes, 
+	unsigned long ulFlags)
+{
+	ASSERT(pConnector);
+	return pConnector->FtpDownloadFile(
+		szRemoteFilePath, szLocalFilePath, 
+		bFailIfExist, ulAttributes, ulFlags);
 }
 
 

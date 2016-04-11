@@ -81,5 +81,15 @@ namespace CkFtpUtils
     ** @Ret : 操作成功返回true，失败返回false
     */
     CK_API bool FtpRemoveFile(FtpConnector* pConnector, const char* szRemotePath, const char* szFileName);
+
+
+	CK_API bool FtpDownloadFile(
+		FtpConnector* pConnector,
+		const char* szRemoteFilePath,
+		const char* szLocalFilePath,
+		bool bFailIfExist = false,
+		unsigned long ulAttributes = 0x00000080, //FILE_ATTRIBUTE_NORMAL
+		unsigned long ulFlags = 0x00000002,      //FTP_TRANSFER_TYPE_BINARY
+		unsigned long ulContext = 1);
 }
 

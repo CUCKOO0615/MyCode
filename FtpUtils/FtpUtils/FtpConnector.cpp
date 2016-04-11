@@ -2,7 +2,7 @@
 
 #pragma warning(disable:4996)
 #include "FtpConnector.h"
-#include "CStringUtils.h"
+#include "StringConvert.h"
 #include "StringUtils.h"
 #include "PtrUtils.hpp"
 
@@ -74,11 +74,8 @@ LPCSTR FtpConnector::GetFtpCurrentDir()
         if (!m_pConnection->GetCurrentDirectory(strCurDir))
         {
 			DWORD dwErrCode = ::GetLastError();
-			DWORD dwErrorSize = 256, dwLastErrorMsg;
-			CHAR szError[256] = { 0 };
-			if (ERROR_INTERNET_EXTENDED_ERROR == dwErrCode)		
-				InternetGetLastResponseInfo(&dwLastErrorMsg, szError, &dwErrorSize);
-			SET_LAST_ERRMSG("Get current directory failed, %s, err code: %d", szError, dwErrCode);
+			std::string strErrMsg = GetFtpApiFailedErrMsg(dwErrCode);
+			SET_LAST_ERRMSG("GetCurrentDirectory failed, %s, err code: %d", strErrMsg.c_str(), dwErrCode);
 			return szDefaultRetStr;
         }    
     }
@@ -91,17 +88,13 @@ LPCSTR FtpConnector::GetFtpCurrentDir()
 	if (m_bEnableUtf8)
 	{
 		char* pErr = NULL;
-		char* szAnsi = StringUtils::StrConv_Utf82A(strCurDir.GetBuffer(0), pErr);
-		CkPtrUtils::PtrScopeGuard<char> psg(&szAnsi, true);
-		if (!szAnsi)
+		if (!StringConvert::StrConv_Utf82A(strCurDir, pErr))
 		{
 			SET_LAST_ERRMSG("Convert UTF8 to ANSI failed, err msg: %s", pErr);
 			return szDefaultRetStr;
 		}
-		m_strCurrentDir = szAnsi;
 	}
-	else
-		m_strCurrentDir = strCurDir.GetBuffer(0);
+	m_strCurrentDir = strCurDir.GetBuffer(0);
 	return m_strCurrentDir.c_str();
 }
 
@@ -123,14 +116,11 @@ bool FtpConnector::SetFtpCurrentDir(LPCSTR szDirPath)
     if (m_bEnableUtf8)
     {
         char* pErr = NULL;
-        char* szUtf8 = StringUtils::StrConv_A2Utf8(szDirPath, pErr);
-		CkPtrUtils::PtrScopeGuard<char> psg(&szUtf8, true);
-        if (!szUtf8)
-        {
-            SET_LAST_ERRMSG("Convert ANSI to UTF8 failed, err msg: %s", pErr);
-            return false;
-        }
-        strDirPath = szUtf8;
+		if (!StringConvert::StrConv_A2Utf8(strDirPath, pErr))
+		{
+			SET_LAST_ERRMSG("Convert ANSI to UTF8 failed, err msg: %s", pErr);
+			return false;
+		}
     }
 
     try
@@ -139,11 +129,8 @@ bool FtpConnector::SetFtpCurrentDir(LPCSTR szDirPath)
 			return true;
 
 		DWORD dwErrCode = ::GetLastError();
-		DWORD dwErrorSize = 256, dwLastErrorMsg;
-		CHAR szError[256] = { 0 };
-		if (ERROR_INTERNET_EXTENDED_ERROR == dwErrCode)
-			InternetGetLastResponseInfo(&dwLastErrorMsg, szError, &dwErrorSize);
-		SET_LAST_ERRMSG("Set current directory failed, %s, err code: %d", szError, dwErrCode);
+		std::string strErrMsg = GetFtpApiFailedErrMsg(dwErrCode);
+		SET_LAST_ERRMSG("SetCurrentDirectory failed, %s, err code: %d", strErrMsg.c_str(), dwErrCode);
 	}
 	catch (CInternetException *pEx)
 	{
@@ -174,15 +161,12 @@ bool FtpConnector::FtpRemoveFile(LPCSTR szRemoteDirPath, LPCSTR szFileName)
 	
 	if (m_bEnableUtf8)
 	{
-		char* pszErrMsg = NULL;
-		char* szUtf8RemoteFilePath = StringUtils::StrConv_T2UTF8(strRemoteFilePath, pszErrMsg);
-		CkPtrUtils::PtrScopeGuard<char> psg(&szUtf8RemoteFilePath, true);
-		if (!szUtf8RemoteFilePath)
+		char* pErr = NULL;
+		if (!StringConvert::StrConv_A2Utf8(strRemoteFilePath, pErr))
 		{
-			SET_LAST_ERRMSG("Convert remote file path to UTF8 failed, err msg: %s", pszErrMsg);
+			SET_LAST_ERRMSG("Convert remote file path to UTF8 failed, err msg: %s", pErr);
 			return false;
 		}
-		strRemoteFilePath = szUtf8RemoteFilePath;
 	}
 
 	try
@@ -191,12 +175,9 @@ bool FtpConnector::FtpRemoveFile(LPCSTR szRemoteDirPath, LPCSTR szFileName)
 			return true;
 
 		DWORD dwErrCode = ::GetLastError();
-		DWORD dwErrorSize = 256, dwLastErrorMsg;
-		CHAR szError[256] = { 0 };
-		if (ERROR_INTERNET_EXTENDED_ERROR == dwErrCode)
-			InternetGetLastResponseInfo(&dwLastErrorMsg, szError, &dwErrorSize);
-		SET_LAST_ERRMSG("Delete specified file failed, file: %s, err msg: %s, err code: %d",
-			szFileName, szError, dwErrCode);
+		std::string strErrMsg = GetFtpApiFailedErrMsg(dwErrCode);		
+		SET_LAST_ERRMSG("Remove failed, file: %s, err msg: %s, err code: %d",
+			szFileName, strErrMsg.c_str(), dwErrCode);
 	}
 	catch (CInternetException* pEx)
 	{
@@ -205,14 +186,69 @@ bool FtpConnector::FtpRemoveFile(LPCSTR szRemoteDirPath, LPCSTR szFileName)
 	return false;
 }
 
-bool FtpConnector::FtpDownloadFile(LPCSTR szRemoteDirPath, LPCSTR szFileName)
+bool FtpConnector::FtpDownloadFile(
+	LPCSTR szRemoteFilePath, LPCSTR szLocalFilePath, 
+	BOOL bFailIfExist, DWORD dwAttributes, DWORD dwFlags, DWORD_PTR dwContext)
 {
+	RESET_ERRMSG;
+	if (!m_pConnection)
+	{
+		SET_LAST_ERRMSG("m_pConnection is NULL");
+		return false;
+	}
+	if (!szLocalFilePath || !strlen(szLocalFilePath) ||	!szRemoteFilePath || !strlen(szRemoteFilePath))
+	{
+		SET_LAST_ERRMSG("File path is NULL or empty");
+		return false;
+	}
 
-	return true;
+	CString strRemoteFilePath = CString(m_strRootDir.c_str()) + szRemoteFilePath;
+	strRemoteFilePath.Replace('\\', '/');
+	strRemoteFilePath.Replace("//", "/");
+
+	if (m_bEnableUtf8)
+	{
+		char* pErr = NULL;
+		if (!StringConvert::StrConv_A2Utf8(strRemoteFilePath, pErr))
+		{
+			SET_LAST_ERRMSG("Convert remote file path to UTF8 failed, err msg: %s", pErr);
+			return false;
+		}
+	}
+	
+	try
+	{
+		if (m_pConnection->GetFile(
+			strRemoteFilePath.GetBuffer(0), szLocalFilePath,
+			bFailIfExist, dwAttributes, dwFlags, dwContext))
+			return true;
+
+		DWORD dwErrCode = ::GetLastError();
+		std::string strErrMsg = GetFtpApiFailedErrMsg(dwErrCode);		
+		SET_LAST_ERRMSG("Download failed, file: %s, err msg: %s, err code: %d", 
+			szRemoteFilePath, strErrMsg.c_str(), dwErrCode);
+	}
+	catch (CInternetException *pEx)
+	{
+		InternetExceptionErrorOccured(pEx);
+	}
+	return false;
 }
 
-bool FtpConnector::FtpUploadFile(LPCSTR szRemoteDirPath, LPCSTR szFileName)
+bool FtpConnector::FtpUploadFile(LPCSTR szLocalFilePath, LPCSTR szRemoteFilePath)
 {
+	RESET_ERRMSG;
+	if (!m_pConnection)
+	{
+		SET_LAST_ERRMSG("m_pConnection is NULL");
+		return false;
+	}
+	if (!szLocalFilePath || !strlen(szLocalFilePath) || 
+		!szRemoteFilePath || !strlen(szRemoteFilePath))
+	{
+		SET_LAST_ERRMSG("File path is NULL or empty");
+		return false;
+	}
 
 	return true;
 }
@@ -225,5 +261,23 @@ void FtpConnector::InternetExceptionErrorOccured(CInternetException* pEx)
 		::strcpy(szError, "FTP unknown exception");
 	pEx->Delete();
 	SET_LAST_ERRMSG(szError);
+}
+
+std::string FtpConnector::GetFtpApiFailedErrMsg(DWORD dwErrCode)
+{
+	DWORD dwErrorSize = 512, dwLastErrorMsg;
+	char buff[512] = { 0 };
+	if (ERROR_INTERNET_EXTENDED_ERROR == dwErrCode)
+		InternetGetLastResponseInfo(&dwLastErrorMsg, buff, &dwErrorSize);
+
+	std::string strRet(buff);
+	if (m_bEnableUtf8)
+	{
+		char* pErr = NULL;
+		char* szAnsi = StringUtils::StrConv_Utf82A(buff, pErr);
+		strRet = szAnsi;
+		delete[] szAnsi;
+	}
+	return strRet;
 }
 

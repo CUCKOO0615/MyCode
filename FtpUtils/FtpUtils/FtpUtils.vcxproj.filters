@@ -33,9 +33,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="CStringUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="StringUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -44,6 +41,9 @@
     </ClCompile>
     <ClCompile Include="FtpConnector.cpp">
       <Filter>FtpConnector</Filter>
+    </ClCompile>
+    <ClCompile Include="StringConvert.cpp">
+      <Filter>Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -59,9 +59,6 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="CStringUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="FtpUtils_ExportC.h">
       <Filter>Export</Filter>
     </ClInclude>
@@ -73,6 +70,9 @@
     </ClInclude>
     <ClInclude Include="FtpConnector.h">
       <Filter>FtpConnector</Filter>
+    </ClInclude>
+    <ClInclude Include="StringConvert.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
