@@ -25,10 +25,10 @@ int _tmain(int argc, _TCHAR* argv[])
 // 	if (!CkFtpUtils::FtpDownloadFile(p, "/123\\123.txt", "Z:\\新建文件夹123\\111.txt"))
 // 		std::cout << CkFtpUtils::GetLastErrMsg(p) << std::endl;
 
-// 	if (!CkFtpUtils::FtpRemoveFile(p, "梁中原\\新建文件夹", "新建 BMP 图像.bmp"))
+// 	if (!CkFtpUtils::FtpRemoveFile(p, "喵帕斯\\新建文件夹", "新建 BMP 图像.bmp"))
 // 		std::cout << CkFtpUtils::GetLastErrMsg(p) << std::endl;
 
-	if (!CkFtpUtils::FtpDownloadFile(p, "/梁原中/123.txt", "Z:\\新建文件夹123\\111.txt"))
+	if (!CkFtpUtils::FtpDownloadFile(p, "喵帕斯\\新建文件夹\\1.txt", "Z:\\新建文件夹123\\111.txt"))
 	 	std::cout << CkFtpUtils::GetLastErrMsg(p) << std::endl;
 
 //	CkFtpUtils::ReleaseFtpConnector(p);
