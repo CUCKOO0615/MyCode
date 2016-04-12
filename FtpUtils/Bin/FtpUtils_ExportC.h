@@ -83,13 +83,22 @@ namespace CkFtpUtils
     CK_API bool FtpRemoveFile(FtpConnector* pConnector, const char* szRemotePath, const char* szFileName);
 
 
+	/*
+	** 下载文件
+	** @Param pConnector: 有效的FtpConnector对象
+	** @Param szRemoteFilePath: 远程文件路径
+	** @Param szLocalFilePath: 本地文件路径
+	** @Param bFailIfExist: 置true-本地有同名文件则返回false，置false-覆盖本地文件
+	** @Param ulAttributes: 参见MSDN FILE_ATTRIBUTE_NORMAL相关
+	** @Param ulFlags: 参见MSDN FTP_TRANSFER_TYPE_BINARY相关
+	** @Ret: 操作成功返回true，失败返回false
+	*/
 	CK_API bool FtpDownloadFile(
 		FtpConnector* pConnector,
 		const char* szRemoteFilePath,
 		const char* szLocalFilePath,
 		bool bFailIfExist = false,
 		unsigned long ulAttributes = 0x00000080, //FILE_ATTRIBUTE_NORMAL
-		unsigned long ulFlags = 0x00000002,      //FTP_TRANSFER_TYPE_BINARY
-		unsigned long ulContext = 1);
+		unsigned long ulFlags = 0x00000002);     //FTP_TRANSFER_TYPE_BINARY
 }
 
