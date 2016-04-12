@@ -5,9 +5,9 @@
 #include "../FtpUtils/FtpUtils_ExportC.h"
 
 #ifdef _DEBUG
-#pragma comment(lib, "../Debug/FtpUtils.lib")
+#pragma comment(lib, "../Bin/FtpUtils.lib")
 #else
-#pragma comment(lib, "../Release/FtpUtils.lib")
+#pragma comment(lib, "../Bin/FtpUtils.lib")
 #endif
 
 #include <iostream>
