@@ -84,7 +84,7 @@ namespace CkFtpUtils
 
 
 	/*
-	** 下载文件
+	** 下载文件（UTF8模式下，奇数中文路径依旧有问题）
 	** @Param pConnector: 有效的FtpConnector对象
 	** @Param szRemoteFilePath: 远程文件路径
 	** @Param szLocalFilePath: 本地文件路径
