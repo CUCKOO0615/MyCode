@@ -98,9 +98,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>copy ..\Release\FtpUtils.dll ..\Bin\FtpUtils.dll
-copy ..\Release\FtpUtils.lib ..\Bin\FtpUtils.lib
-copy FtpUtils_ExportC.h ..\Bin\FtpUtils_ExportC.h</Command>
+      <Command>copy FtpUtils_ExportC.h ..\Bin\FtpUtils_ExportC.h</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
