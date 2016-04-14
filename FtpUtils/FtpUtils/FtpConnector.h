@@ -55,20 +55,22 @@ public:
 	** 下载文件
 	** @Param szRemoteFilePath: 远程文件路径
 	** @Param szLocalFilePath: 本地文件路径
-	** @Param bFailIfExist: 置true-本地有同名文件则返回false，置false-覆盖本地文件
-	** @Param ulAttributes: 参见MSDN FILE_ATTRIBUTE_NORMAL相关
-	** @Param ulFlags: 参见MSDN FTP_TRANSFER_TYPE_BINARY相关
-	** @Param dwContext:
 	** @Ret: 操作成功返回true，失败返回false
 	*/
 	bool FtpDownloadFile(
 		LPCSTR szRemoteFilePath, 
-		LPCSTR szLocalFilePath, 
+		LPCSTR szLocalFilePath/*, 
 		BOOL bFailIfExist = FALSE, 
 		DWORD dwAttributes = FILE_ATTRIBUTE_NORMAL,
 		DWORD dwFlags = FTP_TRANSFER_TYPE_BINARY,
-		DWORD_PTR dwContext = 1);
+		DWORD_PTR dwContext = 1*/);
 
+    /*
+    ** 上传文件
+    ** @Param szLocalFilePath: 本地文件路径
+    ** @Param szRemoteFilePath: 远程文件路径
+    ** @Ret: 操作成功返回true，失败返回false
+    */
 	bool FtpUploadFile(LPCSTR szLocalFilePath, LPCSTR szRemoteFilePath);
 	        
     //获取当前会话用户根目录,以'/'结尾

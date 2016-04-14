@@ -59,15 +59,17 @@ CK_API const char* CkFtpUtils::GetFtpRootDir(FtpConnector* pConnector)
 }
 
 CK_API bool CkFtpUtils::FtpDownloadFile(FtpConnector* pConnector,
-	const char* szRemoteFilePath, const char* szLocalFilePath, 
-	bool bFailIfExist, 
-	unsigned long ulAttributes, 
-	unsigned long ulFlags)
+	const char* szRemoteFilePath, const char* szLocalFilePath)
 {
 	ASSERT(pConnector);
-	return pConnector->FtpDownloadFile(
-		szRemoteFilePath, szLocalFilePath, 
-		bFailIfExist, ulAttributes, ulFlags);
+	return pConnector->FtpDownloadFile(szRemoteFilePath, szLocalFilePath);
+}
+
+CK_API bool CkFtpUtils::FtpUploadFile(FtpConnector* pConnector,
+    const char* szLocalFilePath, const char* szRemoteFilePath)
+{
+    ASSERT(pConnector);
+    return pConnector->FtpUploadFile(szLocalFilePath, szRemoteFilePath);
 }
 
 

@@ -23,11 +23,13 @@ int _tmain(int argc, _TCHAR* argv[])
         return 1;
     }
 
-/*
-	if (!CkFtpUtils::FtpDownloadFile(p, "/123\\123.txt", "Z:\\新建文件夹123\\111.txt"))
-		std::cout << CkFtpUtils::GetLastErrMsg(p) << std::endl;
+    if (!CkFtpUtils::FtpUploadFile(p, "X:\\flashplayer.zip", "喵帕斯\\新建文件夹\\flashplayer.zip"))
+        std::cout << CkFtpUtils::GetLastErrMsg(p) << std::endl;
 
-	if (!CkFtpUtils::FtpDownloadFile(p, "喵帕斯\\新建文件夹\\1.txt", "Z:\\新建文件夹123\\111.txt"))
+// 	if (!CkFtpUtils::FtpDownloadFile(p, "喵帕斯\\新建文件夹\\1.txt", "X:\\222\\111.txt"))
+// 		std::cout << CkFtpUtils::GetLastErrMsg(p) << std::endl;
+
+/*	if (!CkFtpUtils::FtpDownloadFile(p, "喵帕斯\\新建文件夹\\1.txt", "Z:\\新建文件夹123\\111.txt"))
 	 	std::cout << CkFtpUtils::GetLastErrMsg(p) << std::endl;
 
 	if (!CkFtpUtils::FtpRemoveFile(p, "喵帕斯\\新建文件夹", "新建 BMP 图像.bmp"))
