@@ -44,12 +44,14 @@ namespace CkFtpUtils
     ** @Param szUserName: 用户名,设为NULL时默认anonymous
     ** @Param szPassword: 密码
 	** @Param bEnableUtf8: 如果服务器端使用UTF8编码,则该参数应置为true
+    ** @Param bPassive: 主动/被动模式，默认使用主动模式
     ** @Ret : 连接成功返回true,失败返回false
     */
     CK_API bool ConnectFtp(FtpConnector* pConnector, 
 		const char* szIP, unsigned short usPort = 21,
         const char* szUserName = "anonymous", const char* szPassword = "",
-		bool bEnableUtf8 = false);
+		bool bEnableUtf8 = false,
+        bool bPassive = false);
     
 	/*
 	** 设置当前会话用户当前目录

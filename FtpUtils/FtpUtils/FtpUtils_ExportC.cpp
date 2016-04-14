@@ -27,10 +27,10 @@ CK_API const char* CkFtpUtils::GetLastErrMsg(FtpConnector* pConnector)
 CK_API bool CkFtpUtils::ConnectFtp(FtpConnector* pConnector, 
 	const char* szIP, unsigned short usPort /*= 21*/, 
 	const char* szUserName /*= "anonymous"*/, const char* szPassword /*= ""*/,
-	bool bEnableUtf8/* = false*/)
+    bool bEnableUtf8/* = false*/, bool bPassive /*= false*/)
 {
 	ASSERT(pConnector);
-	return pConnector->CreateFtpConnection(szIP, usPort, szUserName, szPassword, bEnableUtf8);
+    return pConnector->CreateFtpConnection(szIP, usPort, szUserName, szPassword, bEnableUtf8, bPassive);
 }
 
 

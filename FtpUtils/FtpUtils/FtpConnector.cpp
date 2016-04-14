@@ -26,14 +26,14 @@ FtpConnector::~FtpConnector()
     m_objSession.Close();
 }
 
-bool FtpConnector::CreateFtpConnection(LPCSTR szIP, USHORT usPort, LPCSTR szUserName, LPCSTR szPassword, bool bEnableUtf8)
+bool FtpConnector::CreateFtpConnection(LPCSTR szIP, USHORT usPort, LPCSTR szUserName, LPCSTR szPassword, bool bEnableUtf8, BOOL bPassive)
 {
 	RESET_ERRMSG;
 	try
 	{	//该函数操作失败会直接抛异常,不需要检查返回值
 		m_pConnection = m_objSession.GetFtpConnection(		
-			szIP, szUserName, szPassword, (INTERNET_PORT)usPort, FALSE);
-
+            szIP, szUserName, szPassword, (INTERNET_PORT)usPort, bPassive);
+        
 		m_bEnableUtf8 = bEnableUtf8; //GetCurrentDirectory()正确执行的前提
 		CString strFtpRootDir = GetFtpCurrentDir();
 		if ("ERROR" == strFtpRootDir)

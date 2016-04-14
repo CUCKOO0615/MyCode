@@ -18,12 +18,14 @@ public:
     ** @Param szUserName: 用户名,默认anonymous(匿名用户)
     ** @Param szPassword: 默认为空
 	** @Param bEnableUtf8: 如果服务器端使用UTF8编码,则该参数应置为true
+    ** @Param bPassive: 主动/被动模式，默认使用主动模式
     ** @Ret : 创建成功返回true,失败返回false
     */
     bool CreateFtpConnection
         (LPCSTR szIP, USHORT usPort = 21,
         LPCSTR szUserName = "anonymous", LPCSTR szPassword = "",
-        bool bEnableUtf8 = false);
+        bool bEnableUtf8 = false,
+        BOOL bPassive = FALSE);
 
 	// 获取由CreateFtpConnection创建的FTP连接对象指针
 	CFtpConnection* GetConnection() const;
