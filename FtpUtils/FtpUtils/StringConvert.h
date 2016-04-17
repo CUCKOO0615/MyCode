@@ -16,6 +16,8 @@ namespace StringConvert
     // TCHAR×Ö·û´®×ªCStringW
     CStringW StrConv_TStr2CStringW(const TCHAR* _tszStr);
 
+	void StrConv_CStringA2cstr(CStringA strA, char* pBuff, int nBuffSize);
+
 	//CStringA×Ö·û´®ÄÚ²¿±àÂë×ª»»
 	bool StrConv_Utf82A(CStringA& strA, char*& pErr);
 	bool StrConv_A2Utf8(CStringA& strA, char*& pErr);

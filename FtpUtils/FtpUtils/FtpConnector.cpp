@@ -309,7 +309,7 @@ bool FtpConnector::FtpUploadFile(LPCSTR szLocalFilePath, LPCSTR szRemoteFilePath
         //文件打开失败会直接抛异常，不需要检查返回值
         CInternetFile* pFile = m_pConnection->OpenFile(strRemoteFilePath.GetBuffer(0), GENERIC_WRITE);
 
-        const int nBuffSize = 1024;
+        const int nBuffSize = 102400;
         char buff[nBuffSize] = { 0 };
         while (true)
         {
@@ -357,5 +357,96 @@ std::string FtpConnector::GetFtpApiFailedErrMsg(DWORD dwErrCode)
         delete[] szAnsi;
     }
     return strRet;
+}
+
+bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, std::vector<FtpFileInfo>& vecFileInfos)
+{
+	RESET_ERRMSG;
+	if (!m_pConnection)
+	{
+		SET_LAST_ERRMSG("m_pConnection is NULL");
+		return false;
+	}
+	if (!szRemoteDir || !strlen(szRemoteDir))
+	{
+		SET_LAST_ERRMSG("File path is NULL or empty");
+		return false;
+	}
+
+	try
+	{
+		CFtpFileFind fileFinder(m_pConnection);
+		BOOL bFind = fileFinder.FindFile();
+		while (bFind)
+		{
+			bFind = fileFinder.FindNextFileA();
+
+			FtpFileInfo fileInfo;
+
+			fileInfo.ullLength = fileFinder.GetLength();
+
+			CTime ctCreationTime;
+			FILETIME ft;
+			fileFinder.GetCreationTime(ctCreationTime);
+			fileFinder.GetCreationTime(&ft);
+			fileInfo.tCreationTime = ctCreationTime.GetTime();
+
+			CTime ctLastAccessTime;
+			fileFinder.GetLastAccessTime(ctLastAccessTime);
+			fileInfo.tLastAccessTime = ctLastAccessTime.GetTime();
+
+			CTime ctLastWriteTime;
+			fileFinder.GetLastAccessTime(ctLastWriteTime);
+			fileInfo.tLastWriteTime = ctLastWriteTime.GetTime();
+			
+			using namespace StringConvert;
+			CString strFileName = fileFinder.GetFileName();
+			CString strFilePath = fileFinder.GetFilePath();
+			CString strFileTitle = fileFinder.GetFileTitle();
+			CString strFileUrl = fileFinder.GetFileURL();
+			CString strRoot = fileFinder.GetRoot();
+			
+			if (m_bEnableUtf8)
+			{
+				char* pErr = NULL;
+				if (!StrConv_Utf82A(strFileName, pErr))
+					SET_LAST_ERRMSG("Convert remote file name %s to UTF8 failed, err msg: %s", strFileName, pErr);
+				if (!StrConv_Utf82A(strFilePath, pErr))
+					SET_LAST_ERRMSG("Convert remote file path %s to UTF8 failed, err msg: %s", strFilePath, pErr);
+				if (!StrConv_Utf82A(strFileTitle, pErr))
+					SET_LAST_ERRMSG("Convert remote file title %s to UTF8 failed, err msg: %s", strFileTitle, pErr);
+				if (!StrConv_Utf82A(strFileUrl, pErr))
+					SET_LAST_ERRMSG("Convert remote file url %s to UTF8 failed, err msg: %s", strFileUrl, pErr);
+				if (!StrConv_Utf82A(strRoot, pErr))
+					SET_LAST_ERRMSG("Convert remote file root %s to UTF8 failed, err msg: %s", strRoot, pErr);
+			}
+			
+			StrConv_CStringA2cstr(strFileName, fileInfo.szFileName, PATHBUFFER_LENGTH);
+			StrConv_CStringA2cstr(strFilePath, fileInfo.szFilePath, PATHBUFFER_LENGTH);
+			StrConv_CStringA2cstr(strFileTitle, fileInfo.szFileTitle, PATHBUFFER_LENGTH);
+			StrConv_CStringA2cstr(strFileUrl, fileInfo.szFileUrl, PATHBUFFER_LENGTH);
+			StrConv_CStringA2cstr(strRoot, fileInfo.szRoot, PATHBUFFER_LENGTH);
+
+			fileInfo.bIsArchived = (fileFinder.IsArchived() == TRUE);
+			fileInfo.bIsCompressed = (fileFinder.IsCompressed() == TRUE);
+			fileInfo.bIsDirectory = (fileFinder.IsDirectory() == TRUE);
+			fileInfo.bIsDots = (fileFinder.IsDots() == TRUE);
+			fileInfo.bIsHidden = (fileFinder.IsHidden() == TRUE);
+			fileInfo.bIsNormal = (fileFinder.IsNormal() == TRUE);
+			fileInfo.bIsReadOnly = (fileFinder.IsReadOnly() == TRUE);
+			fileInfo.bIsSerializable = (fileFinder.IsSerializable() == TRUE);
+			fileInfo.bIsSystem = (fileFinder.IsSystem() == TRUE);
+			fileInfo.bIsTemporary = (fileFinder.IsTemporary() == TRUE);
+
+			vecFileInfos.push_back(fileInfo);
+		}
+		fileFinder.Close();
+
+	}
+	catch (CInternetException *pEx)
+	{
+		InternetExceptionErrorOccured(pEx);
+	}
+	return true;
 }
 

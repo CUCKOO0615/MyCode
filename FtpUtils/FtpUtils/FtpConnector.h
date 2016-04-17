@@ -7,6 +7,36 @@
 //*************************************************
 #include <afxinet.h>
 #include <string>
+#include <vector>
+
+#ifndef EXPORT_STDC
+static const int PATHBUFFER_LENGTH = 1024;
+struct FtpFileInfo
+{
+	unsigned __int64 ullLength;
+
+	time_t tCreationTime;
+	time_t tLastAccessTime;
+	time_t tLastWriteTime;
+
+	char szFileName[PATHBUFFER_LENGTH];
+	char szFilePath[PATHBUFFER_LENGTH];
+	char szFileTitle[PATHBUFFER_LENGTH];
+	char szFileUrl[PATHBUFFER_LENGTH];
+	char szRoot[PATHBUFFER_LENGTH];
+
+	bool bIsArchived;
+	bool bIsCompressed;
+	bool bIsDirectory;
+	bool bIsDots;
+	bool bIsHidden;
+	bool bIsNormal;
+	bool bIsReadOnly;
+	bool bIsSerializable;
+	bool bIsSystem;
+	bool bIsTemporary;
+};
+#endif
 
 class FtpConnector
 {
@@ -73,6 +103,11 @@ public:
     */
 	bool FtpUploadFile(LPCSTR szLocalFilePath, LPCSTR szRemoteFilePath);
 	        
+
+	bool FtpGetFileInfosInDir(LPCSTR szRemoteDir, std::vector<FtpFileInfo>& vecFileInfos);
+
+
+
     //获取当前会话用户根目录,以'/'结尾
 	LPCSTR GetFtpRootDir() const;
 

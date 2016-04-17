@@ -72,5 +72,23 @@ CK_API bool CkFtpUtils::FtpUploadFile(FtpConnector* pConnector,
     return pConnector->FtpUploadFile(szLocalFilePath, szRemoteFilePath);
 }
 
+CK_API bool CkFtpUtils::FtpGetFileInfosInDir(FtpConnector* pConnector, 
+	const char* szRemoteDir, FtpFileInfo** arrFileInfos, int* nArrSize)
+{
+	ASSERT(pConnector);
+
+	std::vector<FtpFileInfo> vecFileInfos;
+	bool bRet = pConnector->FtpGetFileInfosInDir(szRemoteDir, vecFileInfos);
+	if (!bRet)
+		return false;
+
+	int nVecSize = vecFileInfos.size();
+	*nArrSize = nVecSize;
+	*arrFileInfos = new FtpFileInfo[nVecSize];
+	::memset(*arrFileInfos, 0, nVecSize*sizeof(FtpFileInfo));
+	::memcpy(*arrFileInfos, &vecFileInfos[0], nVecSize*sizeof(FtpFileInfo));
+	return true;
+}
+
 
 

@@ -13,6 +13,33 @@
 
 struct FtpConnector;
 
+static const int PATHBUFFER_LENGTH = 1024;
+struct FtpFileInfo
+{
+	unsigned __int64 ullLength;
+
+	time_t tCreationTime;
+	time_t tLastAccessTime;
+	time_t tLastWriteTime;
+
+	char szFileName[PATHBUFFER_LENGTH];
+	char szFilePath[PATHBUFFER_LENGTH];
+	char szFileTitle[PATHBUFFER_LENGTH];
+	char szFileUrl[PATHBUFFER_LENGTH];
+	char szRoot[PATHBUFFER_LENGTH];
+
+	bool bIsArchived;
+	bool bIsCompressed;
+	bool bIsDirectory;
+	bool bIsDots;
+	bool bIsHidden;
+	bool bIsNormal;
+	bool bIsReadOnly;
+	bool bIsSerializable;
+	bool bIsSystem;
+	bool bIsTemporary;
+};
+
 namespace CkFtpUtils
 {
     /*
@@ -104,6 +131,9 @@ namespace CkFtpUtils
     */
     CK_API bool FtpUploadFile(FtpConnector* pConnector,
         const char* szLocalFilePath, const char* szRemoteFilePath);
+	
+	CK_API bool FtpGetFileInfosInDir(FtpConnector* pConnector, 
+		const char* szRemoteDir, FtpFileInfo** arrFileInfos, int* nArrSize);
 
 }
 

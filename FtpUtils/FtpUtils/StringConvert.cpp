@@ -67,3 +67,9 @@ bool StringConvert::StrConv_A2Utf8(CStringA& strA, char*& pErr)
 	delete[] szUtf8;
 	return true;
 }
+
+void StringConvert::StrConv_CStringA2cstr(CStringA strA, char* pBuff, int nBuffSize)
+{
+	::memset(pBuff, 0, nBuffSize);
+	::memcpy(pBuff, strA.GetBuffer(0), min(nBuffSize, strA.GetLength()));
+}
