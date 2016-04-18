@@ -16,6 +16,7 @@ namespace StringConvert
     // TCHAR字符串转CStringW
     CStringW StrConv_TStr2CStringW(const TCHAR* _tszStr);
 
+    // CStringA转C风格字符串
 	void StrConv_CStringA2cstr(CStringA strA, char* pBuff, int nBuffSize);
 
 	//CStringA字符串内部编码转换

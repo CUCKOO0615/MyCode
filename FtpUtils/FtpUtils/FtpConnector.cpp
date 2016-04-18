@@ -6,6 +6,7 @@
 #include "StringUtils.h"
 #include "PtrUtils.hpp"
 #include <fstream>
+#include "Common.hpp"
 
 #define SET_LAST_ERRMSG(szFormat,...) ::sprintf(m_szLastErrMsg, szFormat, __VA_ARGS__)
 #define RESET_ERRMSG                  m_szLastErrMsg[0]='\0';
@@ -359,7 +360,7 @@ std::string FtpConnector::GetFtpApiFailedErrMsg(DWORD dwErrCode)
     return strRet;
 }
 
-bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, std::vector<FtpFileInfo>& vecFileInfos)
+bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, std::vector<FtpFileInfo>& vecFileInfos)
 {
 	RESET_ERRMSG;
 	if (!m_pConnection)
@@ -372,33 +373,39 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, std::vector<FtpFileI
 		SET_LAST_ERRMSG("File path is NULL or empty");
 		return false;
 	}
+    if (!szFileName)
+        szFileName = "*.*";
 
 	try
 	{
 		CFtpFileFind fileFinder(m_pConnection);
-		BOOL bFind = fileFinder.FindFile();
+        BOOL bFind = fileFinder.FindFile(szFileName);
 		while (bFind)
 		{
-			bFind = fileFinder.FindNextFileA();
+			bFind = fileFinder.FindNextFile();
 
 			FtpFileInfo fileInfo;
 
 			fileInfo.ullLength = fileFinder.GetLength();
+            
+            FILETIME _UTCTIME;
+            SYSTEMTIME _LOCALTIME;
 
-			CTime ctCreationTime;
-			FILETIME ft;
-			fileFinder.GetCreationTime(ctCreationTime);
-			fileFinder.GetCreationTime(&ft);
-			fileInfo.tCreationTime = ctCreationTime.GetTime();
+            fileFinder.GetCreationTime(&_UTCTIME);
+            ::FileTimeToSystemTime(&_UTCTIME, &_LOCALTIME);	
+            fileInfo.tCreationTime = 
+                CTime(_LOCALTIME).GetTime();
 
-			CTime ctLastAccessTime;
-			fileFinder.GetLastAccessTime(ctLastAccessTime);
-			fileInfo.tLastAccessTime = ctLastAccessTime.GetTime();
+            fileFinder.GetLastAccessTime(&_UTCTIME);
+            ::FileTimeToSystemTime(&_UTCTIME, &_LOCALTIME);
+            fileInfo.tLastAccessTime =
+                CTime(_LOCALTIME).GetTime();
 
-			CTime ctLastWriteTime;
-			fileFinder.GetLastAccessTime(ctLastWriteTime);
-			fileInfo.tLastWriteTime = ctLastWriteTime.GetTime();
-			
+            fileFinder.GetLastWriteTime(&_UTCTIME);
+            ::FileTimeToSystemTime(&_UTCTIME, &_LOCALTIME);
+            fileInfo.tLastWriteTime =
+                CTime(_LOCALTIME).GetTime();
+           			
 			using namespace StringConvert;
 			CString strFileName = fileFinder.GetFileName();
 			CString strFilePath = fileFinder.GetFilePath();
@@ -427,18 +434,18 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, std::vector<FtpFileI
 			StrConv_CStringA2cstr(strFileUrl, fileInfo.szFileUrl, PATHBUFFER_LENGTH);
 			StrConv_CStringA2cstr(strRoot, fileInfo.szRoot, PATHBUFFER_LENGTH);
 
-			fileInfo.bIsArchived = (fileFinder.IsArchived() == TRUE);
-			fileInfo.bIsCompressed = (fileFinder.IsCompressed() == TRUE);
-			fileInfo.bIsDirectory = (fileFinder.IsDirectory() == TRUE);
-			fileInfo.bIsDots = (fileFinder.IsDots() == TRUE);
-			fileInfo.bIsHidden = (fileFinder.IsHidden() == TRUE);
-			fileInfo.bIsNormal = (fileFinder.IsNormal() == TRUE);
-			fileInfo.bIsReadOnly = (fileFinder.IsReadOnly() == TRUE);
-			fileInfo.bIsSerializable = (fileFinder.IsSerializable() == TRUE);
-			fileInfo.bIsSystem = (fileFinder.IsSystem() == TRUE);
-			fileInfo.bIsTemporary = (fileFinder.IsTemporary() == TRUE);
+            fileInfo.bIsArchived = IsTRUE(fileFinder.IsArchived());
+            fileInfo.bIsCompressed = IsTRUE(fileFinder.IsCompressed());
+            fileInfo.bIsDirectory = IsTRUE(fileFinder.IsDirectory());
+            fileInfo.bIsDots = IsTRUE(fileFinder.IsDots());
+            fileInfo.bIsHidden = IsTRUE(fileFinder.IsHidden());
+            fileInfo.bIsNormal = IsTRUE(fileFinder.IsNormal());
+            fileInfo.bIsReadOnly = IsTRUE(fileFinder.IsReadOnly());
+            fileInfo.bIsSerializable = IsTRUE(fileFinder.IsSerializable());
+            fileInfo.bIsSystem = IsTRUE(fileFinder.IsSystem());
+            fileInfo.bIsTemporary = IsTRUE(fileFinder.IsTemporary());
 
-			vecFileInfos.push_back(fileInfo);
+            vecFileInfos.push_back(fileInfo);
 		}
 		fileFinder.Close();
 

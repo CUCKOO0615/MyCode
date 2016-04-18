@@ -132,8 +132,20 @@ namespace CkFtpUtils
     CK_API bool FtpUploadFile(FtpConnector* pConnector,
         const char* szLocalFilePath, const char* szRemoteFilePath);
 	
+    /*
+    ** 获取远程目录中的文件信息
+    ** @Param pConnector: 有效的FtpConnector对象
+    ** @Param szRemoteDir: 远程目录
+    ** @Param szFileName: 文件名，可以使用通配符，默认NULL时使用*.*
+    ** @Param arrFileInfos: 指向文件信息数组的指针，
+    ** 函数操作成功后，需要调用ReleaseFileInfos手动释放，否则会产生内存泄漏
+    ** @Ret : 操作成功返回true，失败返回false
+    */
 	CK_API bool FtpGetFileInfosInDir(FtpConnector* pConnector, 
-		const char* szRemoteDir, FtpFileInfo** arrFileInfos, int* nArrSize);
+		const char* szRemoteDir, const char* szFileName, FtpFileInfo** arrFileInfos, int* nArrSize);
+
+    // 释放FtpFileInfo数组指针
+    CK_API void ReleaseFileInfos(FtpFileInfo** pArrFileInfos);
 
 }
 

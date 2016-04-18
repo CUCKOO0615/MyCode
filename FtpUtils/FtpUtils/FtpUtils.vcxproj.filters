@@ -74,6 +74,9 @@
     <ClInclude Include="StringConvert.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Common.hpp">
+      <Filter>FtpConnector</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\FtpUtils.rc2">

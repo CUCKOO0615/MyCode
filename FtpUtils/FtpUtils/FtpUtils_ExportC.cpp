@@ -73,12 +73,11 @@ CK_API bool CkFtpUtils::FtpUploadFile(FtpConnector* pConnector,
 }
 
 CK_API bool CkFtpUtils::FtpGetFileInfosInDir(FtpConnector* pConnector, 
-	const char* szRemoteDir, FtpFileInfo** arrFileInfos, int* nArrSize)
+    const char* szRemoteDir, const char* szFileName, FtpFileInfo** arrFileInfos, int* nArrSize)
 {
 	ASSERT(pConnector);
-
 	std::vector<FtpFileInfo> vecFileInfos;
-	bool bRet = pConnector->FtpGetFileInfosInDir(szRemoteDir, vecFileInfos);
+    bool bRet = pConnector->FtpGetFileInfosInDir(szRemoteDir, szFileName, vecFileInfos);
 	if (!bRet)
 		return false;
 
@@ -88,6 +87,13 @@ CK_API bool CkFtpUtils::FtpGetFileInfosInDir(FtpConnector* pConnector,
 	::memset(*arrFileInfos, 0, nVecSize*sizeof(FtpFileInfo));
 	::memcpy(*arrFileInfos, &vecFileInfos[0], nVecSize*sizeof(FtpFileInfo));
 	return true;
+}
+
+CK_API void CkFtpUtils::ReleaseFileInfos(FtpFileInfo** pArrFileInfos)
+{
+    if (*pArrFileInfos)
+        delete[](*pArrFileInfos);
+    (*pArrFileInfos) = NULL;
 }
 
 

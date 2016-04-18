@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "../FtpUtils/FtpUtils_ExportC.h"
 #include <array>
+#include <time.h>
 
 #ifdef _DEBUG
 #pragma comment(lib, "../Bin/FtpUtils.lib")
@@ -19,6 +20,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	
     //if (!CkFtpUtils::ConnectFtp(p, "114.215.99.219", 21, "FtpTestUser", "1Q2W3E4R5T",true))
 	if (!CkFtpUtils::ConnectFtp(p, "114.215.99.219", 21, "FtpTestUserRW", "1Q2W3E4R5T", true))
+    //if (!CkFtpUtils::ConnectFtp(p, "114.215.99.219", 21, "Administrator", "Cuckoo0615", true))
 	{
         CkFtpUtils::ReleaseFtpConnector(p);
         return 1;
@@ -26,7 +28,18 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	FtpFileInfo* pffi = NULL;
 	int nArrSize = 0;
-	CkFtpUtils::FtpGetFileInfosInDir(p, "喵帕斯\\新建文件夹\\", &pffi, &nArrSize);
+	CkFtpUtils::FtpGetFileInfosInDir(p, "喵帕斯\\新建文件夹\\", NULL ,&pffi, &nArrSize);
+
+
+    for (int i = 0; i != nArrSize; ++i)
+    {
+        time_t t = pffi[i].tLastWriteTime;
+        char buff[30] = { 0 };
+        ::strftime(buff, 30, "%Y/%m/%d %H:%M:%S", localtime(&t));
+        std::cout << pffi[i].szFileName << ":" << buff << std::endl;
+    }
+
+    CkFtpUtils::ReleaseFileInfos(&pffi);
 
 /*
     if (!CkFtpUtils::FtpUploadFile(p, "X:\\flashplayer.zip", "喵帕斯\\新建文件夹\\flashplayer.zip"))

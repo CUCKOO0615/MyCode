@@ -103,11 +103,15 @@ public:
     */
 	bool FtpUploadFile(LPCSTR szLocalFilePath, LPCSTR szRemoteFilePath);
 	        
-
-	bool FtpGetFileInfosInDir(LPCSTR szRemoteDir, std::vector<FtpFileInfo>& vecFileInfos);
-
-
-
+	/*
+	** 获取远程目录中的文件信息
+	** @Param szRemoteDir: 远程目录
+    ** @Param szFileName: 文件名，可以使用通配符，默认NULL时使用*.*
+	** @Param vecFileInfos: 文件信息集合
+	** @Ret : 操作成功返回true，失败返回false
+	*/
+    bool FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, std::vector<FtpFileInfo>& vecFileInfos);
+    
     //获取当前会话用户根目录,以'/'结尾
 	LPCSTR GetFtpRootDir() const;
 
