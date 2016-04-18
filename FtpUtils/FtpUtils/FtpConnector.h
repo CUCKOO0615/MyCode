@@ -139,6 +139,7 @@ private:
 	void SafeCloseConnection();	//安全关闭m_pConnection并赋值为NULL
 	std::string GetFtpApiFailedErrMsg(DWORD dwErrCode);
 	void InternetExceptionErrorOccured(CInternetException* pEx);
+    time_t FileTime2Timet(const FILETIME& ft);
 };
 
 //////////////////////////////////////////////////////////////////////////

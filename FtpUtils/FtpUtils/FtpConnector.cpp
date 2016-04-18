@@ -360,6 +360,13 @@ std::string FtpConnector::GetFtpApiFailedErrMsg(DWORD dwErrCode)
     return strRet;
 }
 
+time_t FtpConnector::FileTime2Timet(const FILETIME& ft)
+{
+    SYSTEMTIME _LOCALTIME;
+    ::FileTimeToSystemTime(&ft, &_LOCALTIME);
+    return CTime(_LOCALTIME).GetTime();
+}
+
 bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, std::vector<FtpFileInfo>& vecFileInfos)
 {
 	RESET_ERRMSG;
@@ -375,57 +382,53 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, s
 	}
     if (!szFileName)
         szFileName = "*.*";
-
+    
+	CFtpFileFind fileFinder(m_pConnection);
+    FILETIME _UTCTIME;
+	FtpFileInfo fileInfo;
 	try
 	{
-		CFtpFileFind fileFinder(m_pConnection);
         BOOL bFind = fileFinder.FindFile(szFileName);
 		while (bFind)
 		{
 			bFind = fileFinder.FindNextFile();
-
-			FtpFileInfo fileInfo;
-
+            
 			fileInfo.ullLength = fileFinder.GetLength();
             
-            FILETIME _UTCTIME;
-            SYSTEMTIME _LOCALTIME;
-
             fileFinder.GetCreationTime(&_UTCTIME);
-            ::FileTimeToSystemTime(&_UTCTIME, &_LOCALTIME);	
-            fileInfo.tCreationTime = 
-                CTime(_LOCALTIME).GetTime();
+            fileInfo.tCreationTime = FileTime2Timet(_UTCTIME);
 
             fileFinder.GetLastAccessTime(&_UTCTIME);
-            ::FileTimeToSystemTime(&_UTCTIME, &_LOCALTIME);
-            fileInfo.tLastAccessTime =
-                CTime(_LOCALTIME).GetTime();
+            fileInfo.tLastAccessTime = FileTime2Timet(_UTCTIME);
 
             fileFinder.GetLastWriteTime(&_UTCTIME);
-            ::FileTimeToSystemTime(&_UTCTIME, &_LOCALTIME);
-            fileInfo.tLastWriteTime =
-                CTime(_LOCALTIME).GetTime();
+            fileInfo.tLastWriteTime = FileTime2Timet(_UTCTIME);
            			
-			using namespace StringConvert;
 			CString strFileName = fileFinder.GetFileName();
 			CString strFilePath = fileFinder.GetFilePath();
 			CString strFileTitle = fileFinder.GetFileTitle();
 			CString strFileUrl = fileFinder.GetFileURL();
-			CString strRoot = fileFinder.GetRoot();
-			
-			if (m_bEnableUtf8)
-			{
+            CString strRoot = fileFinder.GetRoot();
+
+            using namespace StringConvert;
+            if (m_bEnableUtf8)
+            {
 				char* pErr = NULL;
 				if (!StrConv_Utf82A(strFileName, pErr))
-					SET_LAST_ERRMSG("Convert remote file name %s to UTF8 failed, err msg: %s", strFileName, pErr);
+					SET_LAST_ERRMSG("Convert remote file name %s to UTF8 failed, err msg: %s", 
+                    strFileName, pErr);
 				if (!StrConv_Utf82A(strFilePath, pErr))
-					SET_LAST_ERRMSG("Convert remote file path %s to UTF8 failed, err msg: %s", strFilePath, pErr);
+					SET_LAST_ERRMSG("Convert remote file path %s to UTF8 failed, err msg: %s", 
+                    strFilePath, pErr);
 				if (!StrConv_Utf82A(strFileTitle, pErr))
-					SET_LAST_ERRMSG("Convert remote file title %s to UTF8 failed, err msg: %s", strFileTitle, pErr);
+					SET_LAST_ERRMSG("Convert remote file title %s to UTF8 failed, err msg: %s", 
+                    strFileTitle, pErr);
 				if (!StrConv_Utf82A(strFileUrl, pErr))
-					SET_LAST_ERRMSG("Convert remote file url %s to UTF8 failed, err msg: %s", strFileUrl, pErr);
+					SET_LAST_ERRMSG("Convert remote file url %s to UTF8 failed, err msg: %s", 
+                    strFileUrl, pErr);
 				if (!StrConv_Utf82A(strRoot, pErr))
-					SET_LAST_ERRMSG("Convert remote file root %s to UTF8 failed, err msg: %s", strRoot, pErr);
+					SET_LAST_ERRMSG("Convert remote file root %s to UTF8 failed, err msg: %s", 
+                    strRoot, pErr);
 			}
 			
 			StrConv_CStringA2cstr(strFileName, fileInfo.szFileName, PATHBUFFER_LENGTH);
@@ -447,13 +450,13 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, s
 
             vecFileInfos.push_back(fileInfo);
 		}
-		fileFinder.Close();
 
 	}
 	catch (CInternetException *pEx)
 	{
 		InternetExceptionErrorOccured(pEx);
 	}
+	fileFinder.Close();
 	return true;
 }
 
