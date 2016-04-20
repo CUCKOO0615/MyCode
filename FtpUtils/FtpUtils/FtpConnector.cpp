@@ -410,27 +410,49 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, s
 			CString strFileUrl = fileFinder.GetFileURL();
             CString strRoot = fileFinder.GetRoot();
 
+            bool bRet = true;
+            fileInfo.szErrMsg[0] = '\0';
             using namespace StringConvert;
             if (m_bEnableUtf8)
             {
-				char* pErr = NULL;
-				if (!StrConv_Utf82A(strFileName, pErr))
-					SET_LAST_ERRMSG("Convert remote file name %s to UTF8 failed, err msg: %s", 
-                    strFileName, pErr);
-				if (!StrConv_Utf82A(strFilePath, pErr))
-					SET_LAST_ERRMSG("Convert remote file path %s to UTF8 failed, err msg: %s", 
-                    strFilePath, pErr);
-				if (!StrConv_Utf82A(strFileTitle, pErr))
-					SET_LAST_ERRMSG("Convert remote file title %s to UTF8 failed, err msg: %s", 
-                    strFileTitle, pErr);
-				if (!StrConv_Utf82A(strFileUrl, pErr))
-					SET_LAST_ERRMSG("Convert remote file url %s to UTF8 failed, err msg: %s", 
-                    strFileUrl, pErr);
-				if (!StrConv_Utf82A(strRoot, pErr))
-					SET_LAST_ERRMSG("Convert remote file root %s to UTF8 failed, err msg: %s", 
-                    strRoot, pErr);
-			}
-			
+                char* pErr = NULL;
+                const char* szFormat = "Convert remote file %s %s to UTF8 failed, err msg: %s";
+                do 
+                {
+                    bRet = StrConv_Utf82A(strFileName, pErr);
+                    if (!bRet)
+                    {
+                        sprintf(fileInfo.szErrMsg, szFormat, "name", strFileName, pErr);
+                        break;
+                    }
+                    bRet = StrConv_Utf82A(strFilePath, pErr);
+                    if (!bRet)
+                    {
+                        sprintf(fileInfo.szErrMsg, szFormat, "path", strFilePath, pErr);
+                        break;
+                    }
+                    bRet = StrConv_Utf82A(strFileTitle, pErr);
+                    if (!bRet)
+                    {
+                        sprintf(fileInfo.szErrMsg, szFormat, "title", strFileTitle, pErr);
+                        break;
+                    }
+                    bRet = StrConv_Utf82A(strFileUrl, pErr);
+                    if (!bRet)
+                    {
+                        sprintf(fileInfo.szErrMsg, szFormat, "url", strFileUrl, pErr);
+                        break;
+                    }
+                    bRet = StrConv_Utf82A(strRoot, pErr);
+                    if (!bRet)
+                    {
+                        sprintf(fileInfo.szErrMsg, szFormat, "root", strRoot, pErr);
+                        break;
+                    }
+                } while (0);                
+            }
+            fileInfo.bIsOK = bRet;
+
 			StrConv_CStringA2cstr(strFileName, fileInfo.szFileName, PATHBUFFER_LENGTH);
 			StrConv_CStringA2cstr(strFilePath, fileInfo.szFilePath, PATHBUFFER_LENGTH);
 			StrConv_CStringA2cstr(strFileTitle, fileInfo.szFileTitle, PATHBUFFER_LENGTH);

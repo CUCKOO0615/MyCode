@@ -35,6 +35,9 @@ struct FtpFileInfo
 	bool bIsSerializable;
 	bool bIsSystem;
 	bool bIsTemporary;
+
+    bool bIsOK;
+    char szErrMsg[1024];
 };
 #endif
 
