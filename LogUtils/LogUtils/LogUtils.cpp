@@ -216,7 +216,9 @@ void LogUtils::SwitchLogFileByDate()
 			break;
 		}
 	}
-	std::string strOldTime(m_strLogFilePath.begin() + nPosBeg, m_strLogFilePath.begin() + nPosEnd);
+	std::string strOldTime(
+        m_strLogFilePath.begin() + nPosBeg, 
+        m_strLogFilePath.begin() + nPosEnd);
 
 	//判断是否是当天的Log
 	char szTime[256] = { 0 };
@@ -234,7 +236,8 @@ void LogUtils::SwitchLogFileByDate()
 
 bool cmpstring(std::string str1, std::string str2){ return str1 > str2; }
 
-static const int LOGFILE_MAX = 3;
+static const int LOGFILE_MAX = 30; 
+//日志文件个数超过LOGFILE_MAX个时，启用旧文件压缩
 void LogUtils::AutoZipOlderLogFiles()
 {
     if (!m_isInited)
