@@ -4,6 +4,8 @@
 #include "LogUtils.h"
 #include "Common.h"
 #include "PathUtils.h"
+#include "StringUtils.h"
+#include "zip.h"
 #include <algorithm>
 
 #define LOGINDEX_MAX 99999999
@@ -154,7 +156,7 @@ unsigned int __stdcall LogUtils::SwitchLogFile_ThreadEntry(void* pParam)
 	{
 		pThis->SwitchLogFileByFileSize();
 		pThis->SwitchLogFileByDate();
-		pThis->AutoDeleteHistoryLogs();
+		pThis->AutoZipOlderLogFiles();
 		::Sleep(5000);
 	}
 	return 0;
@@ -229,7 +231,7 @@ void LogUtils::SwitchLogFileByDate()
 
 bool cmpstring(std::string str1, std::string str2){ return str1 > str2; }
 
-void LogUtils::AutoDeleteHistoryLogs()
+void LogUtils::AutoZipOlderLogFiles()
 {
 	if (!m_isInited)
 		return;
@@ -241,8 +243,23 @@ void LogUtils::AutoDeleteHistoryLogs()
 		return;
 
 	std::sort(vecLogFiles.begin(), vecLogFiles.end(), cmpstring);
-	for (int i = 50; i != nVecSize; ++i)
+    for (int i = 50; i != nVecSize; ++i)
+    {
+        std::wstring wstrLogFilePath;
+        std::string strErrMsg;
+        if (!StringUtils::StrConv_A2W(vecLogFiles[i].c_str(), wstrLogFilePath, strErrMsg))
+            continue;
+
+        std::wstring wstrLogFileName = wstrLogFilePath.substr(wstrLogFilePath.rfind(L'\\'));
+        std::wstring wstrZipFilePath = wstrLogFilePath + L".zip";
+
+        HZIP hZipFile = ::CreateZip(wstrZipFilePath.c_str(), 0);
+        ZipAdd(hZipFile, wstrLogFileName.c_str(), wstrLogFilePath.c_str());
+        ::CloseZip(hZipFile);
+
 		::DeleteFileA(vecLogFiles[i].c_str());
+    }
+
 }
 
 

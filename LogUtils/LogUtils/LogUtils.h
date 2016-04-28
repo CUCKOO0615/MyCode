@@ -79,5 +79,5 @@ private:
 	struct _stat _stuFileState;
 	void SwitchLogFileByFileSize();
 	void SwitchLogFileByDate();
-	void AutoDeleteHistoryLogs();	//自动删除,只保留最近的50个日志文件
+	void AutoZipOlderLogFiles();	//自动删除,只保留最近的50个日志文件
 };

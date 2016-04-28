@@ -51,6 +51,12 @@
     <ClInclude Include="PathUtils.h">
       <Filter>Tools</Filter>
     </ClInclude>
+    <ClInclude Include="zip.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="StringUtils.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -66,6 +72,12 @@
       <Filter>LogUtils_ExportC</Filter>
     </ClCompile>
     <ClCompile Include="PathUtils.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="zip.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="StringUtils.cpp">
       <Filter>Tools</Filter>
     </ClCompile>
   </ItemGroup>
