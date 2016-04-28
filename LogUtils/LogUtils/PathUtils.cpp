@@ -9,6 +9,8 @@
 #include <direct.h>
 #include <assert.h>
 
+#pragma warning(disable:4996)
+
 #define SET_ERROR_MSG(szErrMsg)  strcpy(m_szErrMsg, szErrMsg)
 
 #ifdef CUCKOO0615_USE_STL

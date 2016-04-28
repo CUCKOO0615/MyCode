@@ -1,5 +1,8 @@
 // LogUtils.cpp : 定义 DLL 应用程序的导出函数。
 //
+
+#pragma warning(disable:4996)
+
 #include "stdafx.h"
 #include "LogUtils.h"
 #include "Common.h"
@@ -13,7 +16,7 @@
 LogUtils::LogUtils():
 m_isInited(false),
 m_pLogFile(NULL),
-m_nFileMaxSize(0),
+m_lFileMaxSize(0),
 m_nLogIndex(0),
 m_bSwitchFileByDate(true),
 m_bthrUtilsFlag(true),
@@ -55,7 +58,7 @@ bool LogUtils::InitLogUtils(
     
 	if (nMaxFileSize)
 	{
-		m_nFileMaxSize = nMaxFileSize;
+		m_lFileMaxSize = nMaxFileSize;
 		m_strLogFilePath += "_00000000";
 	}
 	m_strLogFilePath += ".txt";
@@ -164,7 +167,7 @@ unsigned int __stdcall LogUtils::SwitchLogFile_ThreadEntry(void* pParam)
 
 void LogUtils::SwitchLogFileByFileSize()
 {
-	if (!m_isInited || !m_nFileMaxSize)
+	if (!m_isInited || !m_lFileMaxSize)
 		return;
 
 	const char* m_szLogPath = m_strLogFilePath.c_str();
@@ -176,7 +179,7 @@ void LogUtils::SwitchLogFileByFileSize()
 		int nRet = ::_stat(m_szLogPath, &_stuFileState);
 		_off_t nFileSize = (0 == nRet) ? _stuFileState.st_size : 0;
 
-		if (nFileSize < m_nFileMaxSize)
+		if (nFileSize < m_lFileMaxSize)
 			return;
 
 		if ((++m_nLogIndex) >= LOGINDEX_MAX)
@@ -224,42 +227,43 @@ void LogUtils::SwitchLogFileByDate()
 	SyncLockGuard slg(&m_slSyncLock);
 	m_nLogIndex = 0;
 	m_strLogFilePath.replace(m_strLogFilePath.begin()+nPosBeg, m_strLogFilePath.end(), szTime);
-	if (m_nFileMaxSize)
+	if (m_lFileMaxSize)
 		m_strLogFilePath += "_00000000";
 	m_strLogFilePath += ".txt";
 }
 
 bool cmpstring(std::string str1, std::string str2){ return str1 > str2; }
 
+static const int LOGFILE_MAX = 3;
 void LogUtils::AutoZipOlderLogFiles()
 {
-	if (!m_isInited)
-		return;
+    if (!m_isInited)
+        return;
+
 	PathUtils pu;
 	vector<string> vecLogFiles;
 	pu.GetFilesInDir(vecLogFiles, m_strLogDirPath, "*.txt");
 	int nVecSize = vecLogFiles.size();
- 	if (nVecSize <= 50)
+    if (nVecSize <= LOGFILE_MAX)
 		return;
 
 	std::sort(vecLogFiles.begin(), vecLogFiles.end(), cmpstring);
-    for (int i = 50; i != nVecSize; ++i)
+    for (int i = LOGFILE_MAX; i != nVecSize; ++i)
     {
         std::wstring wstrLogFilePath;
         std::string strErrMsg;
         if (!StringUtils::StrConv_A2W(vecLogFiles[i].c_str(), wstrLogFilePath, strErrMsg))
             continue;
 
-        std::wstring wstrLogFileName = wstrLogFilePath.substr(wstrLogFilePath.rfind(L'\\'));
+        std::wstring wstrLogFileName = wstrLogFilePath.substr(wstrLogFilePath.rfind(L'\\')+1);
         std::wstring wstrZipFilePath = wstrLogFilePath + L".zip";
 
         HZIP hZipFile = ::CreateZip(wstrZipFilePath.c_str(), 0);
-        ZipAdd(hZipFile, wstrLogFileName.c_str(), wstrLogFilePath.c_str());
+        ::ZipAdd(hZipFile, wstrLogFileName.c_str(), wstrLogFilePath.c_str());
         ::CloseZip(hZipFile);
 
 		::DeleteFileA(vecLogFiles[i].c_str());
     }
-
 }
 
 

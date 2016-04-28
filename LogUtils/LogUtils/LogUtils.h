@@ -66,7 +66,7 @@ private:
 	FILE * m_pLogFile;
 	std::string m_strLogFilePath;
 	std::string m_strLogDirPath;
-	unsigned int m_nFileMaxSize;
+	long m_lFileMaxSize;
 	bool m_bSwitchFileByDate;
 
 	SyncLock m_slSyncLock;
@@ -79,5 +79,5 @@ private:
 	struct _stat _stuFileState;
 	void SwitchLogFileByFileSize();
 	void SwitchLogFileByDate();
-	void AutoZipOlderLogFiles();	//自动删除,只保留最近的50个日志文件
+	void AutoZipOlderLogFiles(); //自动压缩旧的log文件到zip压缩包
 };
