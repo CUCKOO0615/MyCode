@@ -118,7 +118,7 @@ void LogUtils::Recording(LOG_LEVEL emLL, const char* szRec, ...)
 void LogUtils::Recording(LOG_LEVEL emLL, const char* szRec, va_list argsList)
 {
     if (!m_isInited) return;
-    const char* arrLogLevel[] = { "INFO", "WARN", "ERROR" };
+    const char* arrLogLevel[] = { "INFO", "WARN", "ERROR", "DEBUG" };
 	char szCurTime[100] = { 0 };
 	CkCommon::FormatTime2Str(szCurTime, 100, "%Y/%m/%d %H:%M:%S");
 

@@ -15,7 +15,7 @@
 #ifndef CK_API
 typedef enum emLogLevel
 {
-    LL_INFO, LL_WARN, LL_ERROR
+    LL_INFO, LL_WARN, LL_ERROR, LL_DEBUG
 }LOG_LEVEL;
 #endif
 

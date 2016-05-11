@@ -16,7 +16,8 @@ enum LOG_LEVEL
 {
     LL_INFO, //фум╗
 	LL_WARN, //╬╞╦Ф
-	LL_ERROR //╢МнС
+	LL_ERROR, //╢МнС
+    LL_DEBUG  //╣Вйт
 };
 
 struct LogUtils;
