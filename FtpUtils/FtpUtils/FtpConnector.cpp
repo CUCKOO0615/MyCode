@@ -44,9 +44,7 @@ bool FtpConnector::CreateFtpConnection(LPCSTR szIP, USHORT usPort, LPCSTR szUser
             SafeCloseConnection();
             return false;
         }
-        strFtpRootDir += '/';
-        strFtpRootDir.Replace('\\', '/');
-        strFtpRootDir.Replace("//", "/");
+        CkCommon::FixSlash_FtpRemoteDirPath(strFtpRootDir);
         m_strRootDir = strFtpRootDir.GetBuffer(0);
         return true;
     }
@@ -112,8 +110,8 @@ bool FtpConnector::SetFtpCurrentDir(LPCSTR szDirPath)
 
     CString strDirPath(m_strRootDir.c_str());
     strDirPath += szDirPath;
-    strDirPath.Replace('\\', '/');
-    strDirPath.Replace("//", "/");
+    CkCommon::FixSlash_FtpRemoteDirPath(strDirPath);
+    strDirPath.TrimRight('/');
 
     if (m_bEnableUtf8)
     {
@@ -158,8 +156,7 @@ bool FtpConnector::FtpRemoveFile(LPCSTR szRemoteDirPath, LPCSTR szFileName)
         szRemoteDirPath = "/";
 
     CString strRemoteFilePath = CString(m_strRootDir.c_str()) + szRemoteDirPath + "/" + szFileName;
-    strRemoteFilePath.Replace('\\', '/');
-    strRemoteFilePath.Replace("//", "/");
+    CkCommon::FixSlash_FtpRemoteFilePath(strRemoteFilePath);
 
     if (m_bEnableUtf8)
     {
@@ -204,8 +201,7 @@ bool FtpConnector::FtpDownloadFile(LPCSTR szRemoteFilePath, LPCSTR szLocalFilePa
     }
 
     CString strRemoteFilePath = CString(m_strRootDir.c_str()) + szRemoteFilePath;
-    strRemoteFilePath.Replace('\\', '/');
-    strRemoteFilePath.Replace("//", "/");
+    CkCommon::FixSlash_FtpRemoteFilePath(strRemoteFilePath);
 
     if (m_bEnableUtf8)
     {
@@ -283,8 +279,7 @@ bool FtpConnector::FtpUploadFile(LPCSTR szLocalFilePath, LPCSTR szRemoteFilePath
     }
 
     CString strRemoteFilePath = CString(m_strRootDir.c_str()) + szRemoteFilePath;
-    strRemoteFilePath.Replace('\\', '/');
-    strRemoteFilePath.Replace("//", "/");
+    CkCommon::FixSlash_FtpRemoteFilePath(strRemoteFilePath);
 
     if (m_bEnableUtf8)
     {
@@ -323,6 +318,7 @@ bool FtpConnector::FtpUploadFile(LPCSTR szLocalFilePath, LPCSTR szRemoteFilePath
                 break;  //ÎÄ¼þÎ²
         }
         pFile->Close();
+        ifs.close();
         return true;
     }
     catch (CInternetException *pEx)
@@ -382,13 +378,17 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, s
 	}
     if (!szFileName)
         szFileName = "*.*";
-    
-	CFtpFileFind fileFinder(m_pConnection);
+
+    CString strRemoteFilePath = 
+        CString(m_strRootDir.c_str()) + CString(szRemoteDir) + "/" + CString(szFileName);
+    CkCommon::FixSlash_FtpRemoteFilePath(strRemoteFilePath);
+
+    CFtpFileFind fileFinder(m_pConnection);
     FILETIME _UTCTIME;
 	FtpFileInfo fileInfo;
 	try
 	{
-        BOOL bFind = fileFinder.FindFile(szFileName);
+        BOOL bFind = fileFinder.FindFile(strRemoteFilePath.GetBuffer(0));
 		while (bFind)
 		{
 			bFind = fileFinder.FindNextFile();
@@ -471,14 +471,21 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, s
             fileInfo.bIsTemporary = IsTRUE(fileFinder.IsTemporary());
 
             vecFileInfos.push_back(fileInfo);
-		}
+		}       
 
+        if (!vecFileInfos.size())
+        {
+            SET_LAST_ERRMSG("Cannot find file %s", szFileName);
+            return false;
+        }
+	    fileFinder.Close();
+	    return true;
 	}
 	catch (CInternetException *pEx)
 	{
 		InternetExceptionErrorOccured(pEx);
+        fileFinder.Close();
+        return false;
 	}
-	fileFinder.Close();
-	return true;
 }
 
