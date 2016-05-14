@@ -19,9 +19,6 @@
     <Filter Include="CkTrayIcon">
       <UniqueIdentifier>{d9d2ec84-3471-4814-8d07-f1e5bb4b46ba}</UniqueIdentifier>
     </Filter>
-    <Filter Include="CkDbgConsole">
-      <UniqueIdentifier>{5b814301-fac1-4d97-ad4e-ec3626d68374}</UniqueIdentifier>
-    </Filter>
     <Filter Include="CkScrollBar">
       <UniqueIdentifier>{3f01e2ce-f67d-4888-a83c-d501dd577aa4}</UniqueIdentifier>
     </Filter>
@@ -66,9 +63,6 @@
     <ClInclude Include="Utils\CkTreeCtrl.h">
       <Filter>CkTreeCtrl</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\CKDbgConsole.h">
-      <Filter>CkDbgConsole</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\CkScrollBar.h">
       <Filter>CkScrollBar</Filter>
     </ClInclude>
@@ -88,9 +82,6 @@
     </ClCompile>
     <ClCompile Include="Utils\CkTreeCtrl.cpp">
       <Filter>CkTreeCtrl</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils\CKDbgConsole.cpp">
-      <Filter>CkDbgConsole</Filter>
     </ClCompile>
     <ClCompile Include="Utils\CkScrollBar.cpp">
       <Filter>CkScrollBar</Filter>

@@ -6,7 +6,7 @@
 #include "CUCKOO0615_Utils_MFC.h"
 #include "CUCKOO0615_Utils_MFCDlg.h"
 #include "afxdialogex.h"
-#include "Utils/CKDbgConsole.h"
+//#include "Utils/CKDbgConsole.h"
 
 
 #ifdef _DEBUG
@@ -54,6 +54,10 @@ BOOL CCUCKOO0615_Utils_MFCDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
+        CStringA a = "qxxxkb2016047.doc";
+        if (0 == a.Left(6).CompareNoCase("qxxxkb"));
+
+        CStringA b = a.Mid(6, 4);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -107,12 +111,6 @@ void CCUCKOO0615_Utils_MFCDlg::OnBnClickedOk()
 	//AfxBeginThread(ThreadEntry, this);
 
 
-	CKDbgConsole::GetInstance().ShowConsole();
-
-
-    CKDbgConsole::GetInstance().SetTitle("测试");
-
-
 //     HICON arrIcons[] = {AfxGetApp()->LoadIcon(IDR_MAINFRAME),
 //     AfxGetApp()->LoadIcon(IDI_ICON1),
 //     AfxGetApp()->LoadIcon(IDI_ICON2),
@@ -142,7 +140,6 @@ int CCUCKOO0615_Utils_MFCDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CCUCKOO0615_Utils_MFCDlg::OnBnClickedCancel()
 {
-	CKDbgConsole::GetInstance().ExitConsole();
 
 //     m_ckTrayIcon.StopAnimation();
 // 
