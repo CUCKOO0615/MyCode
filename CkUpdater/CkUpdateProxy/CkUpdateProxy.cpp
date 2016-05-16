@@ -67,7 +67,7 @@ TU_DECLEAR_THREADENTRY(AcceptingUpdater)
         if (INVALID_SOCKET == sNew)
             continue;
         g_sUpdater = sNew;
-        std::cout << "Updater accepted" << std::endl;
+        std::cout << "Updater connected" << std::endl;
         ::SetEvent(g_hEvent4Updater);
     }
     return 0;
@@ -87,7 +87,7 @@ TU_DECLEAR_THREADENTRY(AcceptingConsole)
         if (INVALID_SOCKET == sNew)
             continue;
         g_sConsole = sNew;
-        std::cout << "Console accepted" << std::endl;
+        std::cout << "Console connected" << std::endl;
         ::SetEvent(g_hEvent4Console);
     }
     return 0;
