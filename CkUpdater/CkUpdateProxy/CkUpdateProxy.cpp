@@ -13,11 +13,12 @@
 
 int g_nErrCode = 0;
 
+const int _1M_BYTES_ = 1024 * 1024;
 TU_DECLEAR_THREADENTRY(TransmitFunc)
 {
 	SOCKET* arrSocket = (SOCKET*)pParam;
 	char arrBuff[BUFF_LENGTH] = { 0 };
-    const int n_1M_Bytes = 1024 * 1024;
+
     int nCount = 0;
 	while (true)
     {
@@ -31,10 +32,10 @@ TU_DECLEAR_THREADENTRY(TransmitFunc)
         }
 
         nCount += nRecv;
-        if (nCount >= n_1M_Bytes)
+        if (nCount >= _1M_BYTES_)
         {
             std::cout << "*";
-            nCount -= n_1M_Bytes;
+            nCount -= _1M_BYTES_;
         }
     }
 	std::cout << std::endl;
