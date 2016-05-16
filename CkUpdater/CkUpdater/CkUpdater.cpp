@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <io.h>
 #include "md5.h"
 #include "StringUtils.h"
 
@@ -65,7 +66,9 @@ bool GetFiles(SOCKET s)
 	::memcpy(szMD5, arrFileInfos + 4, 32);
 	::memcpy(szFileName, arrFileInfos + 4 + 32, 256);
     
-	std::ofstream ofs(szFileName, std::ios::binary);
+    std::string strNewFileName = 
+        std::string(szFileName) + "_temp";
+    std::ofstream ofs(strNewFileName.c_str(), std::ios::binary);
     if (ofs.fail())
     {
         std::cout << "Create local file failed." << std::endl;
@@ -97,7 +100,7 @@ bool GetFiles(SOCKET s)
         << std::endl;
 
     std::cout << "Checking md5.." << std::endl;
-    std::ifstream ifs(szFileName, std::ios::binary);
+    std::ifstream ifs(strNewFileName.c_str(), std::ios::binary);
     if (ifs.fail())
     {
         std::cout << "Open file for check md5 failed." << std::endl;
@@ -113,6 +116,17 @@ bool GetFiles(SOCKET s)
         return false;
     }
     std::cout << "Check md5 successful" << std::endl;
+
+    if (!::_access(szFileName, 0) && ::remove(szFileName))
+    {
+        std::cout << "Remove old file failed" << endl;
+        return false;
+    }
+    if (::rename(strNewFileName.c_str(),szFileName))
+    {
+        std::cout << "Rename temp file failed" << endl;
+        return false;
+    }
     return true;
 }
 
