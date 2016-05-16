@@ -7,6 +7,10 @@
 #include "PtrUtils.hpp"
 #include <fstream>
 #include "Common.hpp"
+#include "LogUtils_ExportC.h"
+
+//extern LogUtils * g_pLogUtils;
+
 
 #define SET_LAST_ERRMSG(szFormat,...) ::sprintf(m_szLastErrMsg, szFormat, __VA_ARGS__)
 #define RESET_ERRMSG                  m_szLastErrMsg[0]='\0';
@@ -378,10 +382,27 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, s
 	}
     if (!szFileName)
         szFileName = "*.*";
+//    CkLogUtils::RecordingA(g_pLogUtils, LL_INFO, "4");
 
     CString strRemoteFilePath = 
         CString(m_strRootDir.c_str()) + CString(szRemoteDir) + "/" + CString(szFileName);
+//    CkLogUtils::RecordingA(g_pLogUtils, LL_INFO, strRemoteFilePath);
+
     CkCommon::FixSlash_FtpRemoteFilePath(strRemoteFilePath);
+
+
+//    CkLogUtils::RecordingA(g_pLogUtils, LL_INFO, strRemoteFilePath);
+
+    if (m_bEnableUtf8)
+    {
+        char* pErr = NULL;
+        if (!StringConvert::StrConv_A2Utf8(strRemoteFilePath, pErr))
+        {
+            SET_LAST_ERRMSG("Convert remote file path to UTF8 failed, err msg: %s", pErr);
+            return false;
+        }
+//        CkLogUtils::RecordingA(g_pLogUtils, LL_INFO, "Path convert 2 utf8");
+    }
 
     CFtpFileFind fileFinder(m_pConnection);
     FILETIME _UTCTIME;
@@ -389,6 +410,8 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, s
 	try
 	{
         BOOL bFind = fileFinder.FindFile(strRemoteFilePath.GetBuffer(0));
+//        CkLogUtils::RecordingA(g_pLogUtils, LL_INFO, "Find file ret %d", bFind);
+
 		while (bFind)
 		{
 			bFind = fileFinder.FindNextFile();

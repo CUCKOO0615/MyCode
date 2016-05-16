@@ -120,6 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.hpp" />
+    <ClInclude Include="LogUtils_ExportC.h" />
     <ClInclude Include="StringConvert.h" />
     <ClInclude Include="FtpConnector.h" />
     <ClInclude Include="FtpUtils.h" />

@@ -18,8 +18,8 @@ int _tmain(int argc, _TCHAR* argv[])
 {
     FtpConnector* p = CkFtpUtils::CreateFtpConnector(_T("FtpTest11"));
 	
-    //if (!CkFtpUtils::ConnectFtp(p, "114.215.99.219", 21, "FtpTestUser", "1Q2W3E4R5T",true))
-	if (!CkFtpUtils::ConnectFtp(p, "114.215.99.219", 21, "FtpTestUserRW", "1Q2W3E4R5T", true))
+    if (!CkFtpUtils::ConnectFtp(p, "114.215.99.219", 21, "FtpTestUser", "1Q2W3E4R5T",true))
+	//if (!CkFtpUtils::ConnectFtp(p, "114.215.99.219", 21, "FtpTestUserRW", "1Q2W3E4R5T", true))
     //if (!CkFtpUtils::ConnectFtp(p, "114.215.99.219", 21, "Administrator", "Cuckoo0615", true))
 	{
         CkFtpUtils::ReleaseFtpConnector(p);
@@ -28,7 +28,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	FtpFileInfo* pffi = NULL;
 	int nArrSize = 0;
-	CkFtpUtils::FtpGetFileInfosInDir(p, "喵帕斯\\新建文件夹\\", NULL ,&pffi, &nArrSize);
+	CkFtpUtils::FtpGetFileInfosInDir(p, "CUCKOO0615_MUSIC_FTP\\喵帕斯\\新建文件夹\\", NULL ,&pffi, &nArrSize);
 
 
     for (int i = 0; i != nArrSize; ++i)

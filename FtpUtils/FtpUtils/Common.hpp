@@ -47,7 +47,7 @@ inline void CkCommon::FixBackSlash_DirPath(CString& strDirPath)
 
     while (0 != strDirPath.Replace(_T("\\\\"), _T("\\")));
 
-    if (_T('\\') != strDirPath[nLength - 1])
+    if (_T("\\") != strDirPath.Right(1))
         strDirPath += _T('\\');
 }
 
@@ -67,7 +67,7 @@ inline void CkCommon::FixSlash_FtpRemoteDirPath(CString& strFtpRemotePath)
 
     while (0 != strFtpRemotePath.Replace(_T("//"), _T("/")));
 
-    if (_T('/') != strFtpRemotePath[nLength - 1])
+    if (_T("/") != strFtpRemotePath.Right(1))
         strFtpRemotePath += _T('/');
 }
 
