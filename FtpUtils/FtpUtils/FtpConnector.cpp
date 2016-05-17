@@ -7,10 +7,23 @@
 #include "PtrUtils.hpp"
 #include <fstream>
 #include "Common.hpp"
+
+#ifdef DEBUG
 #include "LogUtils_ExportC.h"
-
-//extern LogUtils * g_pLogUtils;
-
+extern LogUtils * g_pLogUtils;
+//////////////////////////////////////////////////////////////////////////
+#define DBG_INFO(format,...)  \
+    LogUtils::RecordingA(g_pLogUtils, LL_INFO, format, __VA_ARGS__)
+#define DBG_WARN(format,...)  \
+    LogUtils::RecordingA(g_pLogUtils, LL_WARN, format, __VA_ARGS__)
+#define DBG_ERROR(format,...) \
+    LogUtils::RecordingA(g_pLogUtils, LL_ERROR, format, __VA_ARGS__)
+//////////////////////////////////////////////////////////////////////////
+#else
+#define DBG_INFO(format,...)
+#define DBG_WARN(format,...)
+#define DBG_ERROR(format,...)
+#endif // DEBUG
 
 #define SET_LAST_ERRMSG(szFormat,...) ::sprintf(m_szLastErrMsg, szFormat, __VA_ARGS__)
 #define RESET_ERRMSG                  m_szLastErrMsg[0]='\0';
@@ -44,12 +57,14 @@ bool FtpConnector::CreateFtpConnection(LPCSTR szIP, USHORT usPort, LPCSTR szUser
         CString strFtpRootDir = GetFtpCurrentDir();
         if ("ERROR" == strFtpRootDir)
         {
+            DBG_ERROR("Get ftp root dir failed.");
             m_bEnableUtf8 = false;
             SafeCloseConnection();
             return false;
         }
         CkCommon::FixSlash_FtpRemoteDirPath(strFtpRootDir);
         m_strRootDir = strFtpRootDir.GetBuffer(0);
+        DBG_INFO("Connected to ftp server, root dir: %s", m_strRootDir.c_str());
         return true;
     }
     catch (CInternetException *pEx)
@@ -57,6 +72,7 @@ bool FtpConnector::CreateFtpConnection(LPCSTR szIP, USHORT usPort, LPCSTR szUser
         m_bEnableUtf8 = false;
         SafeCloseConnection();
         InternetExceptionErrorOccured(pEx);
+        DBG_ERROR("Connect to FTP server failed.");
         return false;
     }
 }
@@ -340,6 +356,7 @@ void FtpConnector::InternetExceptionErrorOccured(CInternetException* pEx)
         ::strcpy(szError, "FTP unknown exception");
     pEx->Delete();
     SET_LAST_ERRMSG(szError);
+    DBG_ERROR("Internet exception error occured, errmsg: %s", m_szLastErrMsg);
 }
 
 std::string FtpConnector::GetFtpApiFailedErrMsg(DWORD dwErrCode)

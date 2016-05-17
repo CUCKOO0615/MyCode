@@ -3,7 +3,12 @@
 
 #include "stdafx.h"
 #include "FtpUtils.h"
-//#include "LogUtils.hpp"
+
+#ifdef DEBUG
+#include "LogUtils_ExportC.h"
+LogUtils * g_pLogUtils = CkLogUtils::CreateLogUtils();
+#pragma comment(lib, "LogUtils.lib")
+#endif // DEBUG
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,6 +64,10 @@ CFtpUtilsApp theApp;
 BOOL CFtpUtilsApp::InitInstance()
 {
     CWinApp::InitInstance();
+#ifdef DEBUG
+    CkLogUtils::InitLogUtils(g_pLogUtils, ".\\Log\\", "FtpUtilsDebug");
+    //CkLogUtils::ReleaseLogUtils(g_pLogUtils);
+#endif
     return TRUE;
 }
 

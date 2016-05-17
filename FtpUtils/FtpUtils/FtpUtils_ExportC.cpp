@@ -5,26 +5,6 @@
 #include "StringConvert.h"
 #include "FtpConnector.h"
 #include "PtrUtils.hpp"
-// #include "LogUtils_ExportC.h"
-// 
-// #pragma comment(lib, "LogUtils.lib")
-// LogUtils * g_pLogUtils = CkLogUtils::CreateLogUtils();
-
-
-// class AutoManager
-// {
-// public:
-//     AutoManager()
-//     {
-//         CkLogUtils::InitLogUtils(g_pLogUtils);
-//     }
-//     ~AutoManager()
-//     {
-//         CkLogUtils::ReleaseLogUtils(g_pLogUtils);
-//     }
-// };
-// static AutoManager am;
-
 
 CK_API FtpConnector* CkFtpUtils::CreateFtpConnector(const char* szSessionName, int nDelay /*= 5000*/)
 {

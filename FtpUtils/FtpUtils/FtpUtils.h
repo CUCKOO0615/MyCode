@@ -11,7 +11,6 @@
 #include <afxinet.h>
 
 
-
 // CFtpUtilsApp
 // 有关此类实现的信息，请参阅 FtpUtils.cpp
 //
