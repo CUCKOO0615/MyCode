@@ -6,6 +6,12 @@
 #pragma once
 //#include <afx.h>
 
+#ifdef DEBUG
+#include "LogUtils_ExportC.h"
+extern LogUtils * g_pLogUtils;
+#pragma comment(lib, "LogUtils.lib")
+#endif // DEBUG
+
 #define IsTRUE(b) (b==1)
 
 namespace CkCommon

@@ -9,15 +9,14 @@
 #include "Common.hpp"
 
 #ifdef DEBUG
-#include "LogUtils_ExportC.h"
-extern LogUtils * g_pLogUtils;
+LogUtils* g_pLogUtils = CkLogUtils::CreateLogUtils();
 //////////////////////////////////////////////////////////////////////////
 #define DBG_INFO(format,...)  \
-    LogUtils::RecordingA(g_pLogUtils, LL_INFO, format, __VA_ARGS__)
+    CkLogUtils::RecordingA(g_pLogUtils, LL_INFO, format, __VA_ARGS__)
 #define DBG_WARN(format,...)  \
-    LogUtils::RecordingA(g_pLogUtils, LL_WARN, format, __VA_ARGS__)
+    CkLogUtils::RecordingA(g_pLogUtils, LL_WARN, format, __VA_ARGS__)
 #define DBG_ERROR(format,...) \
-    LogUtils::RecordingA(g_pLogUtils, LL_ERROR, format, __VA_ARGS__)
+    CkLogUtils::RecordingA(g_pLogUtils, LL_ERROR, format, __VA_ARGS__)
 //////////////////////////////////////////////////////////////////////////
 #else
 #define DBG_INFO(format,...)
@@ -85,6 +84,7 @@ LPCSTR FtpConnector::GetFtpCurrentDir()
     if (!m_pConnection)
     {
         SET_LAST_ERRMSG("m_pConnection is NULL");
+        DBG_ERROR(m_szLastErrMsg);
         return szDefaultRetStr;
     }
 
@@ -96,12 +96,14 @@ LPCSTR FtpConnector::GetFtpCurrentDir()
             DWORD dwErrCode = ::GetLastError();
             std::string strErrMsg = GetFtpApiFailedErrMsg(dwErrCode);
             SET_LAST_ERRMSG("GetCurrentDirectory failed, %s, err code: %d", strErrMsg.c_str(), dwErrCode);
+            DBG_ERROR(m_szLastErrMsg);
             return szDefaultRetStr;
         }
     }
     catch (CInternetException *pEx)
     {
         InternetExceptionErrorOccured(pEx);
+        DBG_ERROR("Get current directory failed");
         return szDefaultRetStr;
     }
 
@@ -111,10 +113,12 @@ LPCSTR FtpConnector::GetFtpCurrentDir()
         if (!StringConvert::StrConv_Utf82A(strCurDir, pErr))
         {
             SET_LAST_ERRMSG("Convert UTF8 to ANSI failed, err msg: %s", pErr);
+            DBG_ERROR(m_szLastErrMsg);
             return szDefaultRetStr;
         }
     }
     m_strCurrentDir = strCurDir.GetBuffer(0);
+    DBG_INFO("FTP current dir is %s", m_strCurrentDir.c_str());
     return m_strCurrentDir.c_str();
 }
 
@@ -124,6 +128,7 @@ bool FtpConnector::SetFtpCurrentDir(LPCSTR szDirPath)
     if (!m_pConnection)
     {
         SET_LAST_ERRMSG("m_pConnection is NULL");
+        DBG_ERROR(m_szLastErrMsg);
         return false;
     }
     if (!szDirPath) szDirPath = "/";
@@ -132,6 +137,7 @@ bool FtpConnector::SetFtpCurrentDir(LPCSTR szDirPath)
     strDirPath += szDirPath;
     CkCommon::FixSlash_FtpRemoteDirPath(strDirPath);
     strDirPath.TrimRight('/');
+    DBG_INFO("Set remote directory: %s", strDirPath);
 
     if (m_bEnableUtf8)
     {
@@ -139,6 +145,7 @@ bool FtpConnector::SetFtpCurrentDir(LPCSTR szDirPath)
         if (!StringConvert::StrConv_A2Utf8(strDirPath, pErr))
         {
             SET_LAST_ERRMSG("Convert ANSI to UTF8 failed, err msg: %s", pErr);
+            DBG_ERROR(m_szLastErrMsg);
             return false;
         }
     }
@@ -151,10 +158,12 @@ bool FtpConnector::SetFtpCurrentDir(LPCSTR szDirPath)
         DWORD dwErrCode = ::GetLastError();
         std::string strErrMsg = GetFtpApiFailedErrMsg(dwErrCode);
         SET_LAST_ERRMSG("SetCurrentDirectory failed, %s, err code: %d", strErrMsg.c_str(), dwErrCode);
+        DBG_ERROR(m_szLastErrMsg);
     }
     catch (CInternetException *pEx)
     {
         InternetExceptionErrorOccured(pEx);
+        DBG_ERROR("Set current directory failed.");
     }
     return false;
 }
@@ -165,11 +174,13 @@ bool FtpConnector::FtpRemoveFile(LPCSTR szRemoteDirPath, LPCSTR szFileName)
     if (!m_pConnection)
     {
         SET_LAST_ERRMSG("m_pConnection is NULL");
+        DBG_ERROR(m_szLastErrMsg);
         return false;
     }
     if (!szFileName || !strlen(szFileName))
     {
         SET_LAST_ERRMSG("File name is NULL or empty");
+        DBG_ERROR(m_szLastErrMsg);
         return false;
     }
     if (!szRemoteDirPath || !strlen(szRemoteDirPath))
@@ -177,6 +188,7 @@ bool FtpConnector::FtpRemoveFile(LPCSTR szRemoteDirPath, LPCSTR szFileName)
 
     CString strRemoteFilePath = CString(m_strRootDir.c_str()) + szRemoteDirPath + "/" + szFileName;
     CkCommon::FixSlash_FtpRemoteFilePath(strRemoteFilePath);
+    DBG_INFO("Remote file path: %s", strRemoteFilePath);
 
     if (m_bEnableUtf8)
     {
@@ -184,6 +196,7 @@ bool FtpConnector::FtpRemoveFile(LPCSTR szRemoteDirPath, LPCSTR szFileName)
         if (!StringConvert::StrConv_A2Utf8(strRemoteFilePath, pErr))
         {
             SET_LAST_ERRMSG("Convert remote file path to UTF8 failed, err msg: %s", pErr);
+            DBG_ERROR(m_szLastErrMsg);
             return false;
         }
     }
@@ -197,10 +210,12 @@ bool FtpConnector::FtpRemoveFile(LPCSTR szRemoteDirPath, LPCSTR szFileName)
         std::string strErrMsg = GetFtpApiFailedErrMsg(dwErrCode);
         SET_LAST_ERRMSG("Remove failed, file: %s, err msg: %s, err code: %d",
             szFileName, strErrMsg.c_str(), dwErrCode);
+        DBG_ERROR(m_szLastErrMsg);
     }
     catch (CInternetException* pEx)
     {
         InternetExceptionErrorOccured(pEx);
+        DBG_ERROR("Remove remote file failed");
     }
     return false;
 }
@@ -212,16 +227,19 @@ bool FtpConnector::FtpDownloadFile(LPCSTR szRemoteFilePath, LPCSTR szLocalFilePa
     if (!m_pConnection)
     {
         SET_LAST_ERRMSG("m_pConnection is NULL");
+        DBG_ERROR(m_szLastErrMsg);
         return false;
     }
     if (!szLocalFilePath || !strlen(szLocalFilePath) || !szRemoteFilePath || !strlen(szRemoteFilePath))
     {
         SET_LAST_ERRMSG("File path is NULL or empty");
+        DBG_ERROR(m_szLastErrMsg);
         return false;
     }
 
     CString strRemoteFilePath = CString(m_strRootDir.c_str()) + szRemoteFilePath;
     CkCommon::FixSlash_FtpRemoteFilePath(strRemoteFilePath);
+    DBG_INFO("Remote file path is: %s", strRemoteFilePath);
 
     if (m_bEnableUtf8)
     {
@@ -229,6 +247,7 @@ bool FtpConnector::FtpDownloadFile(LPCSTR szRemoteFilePath, LPCSTR szLocalFilePa
         if (!StringConvert::StrConv_A2Utf8(strRemoteFilePath, pErr))
         {
             SET_LAST_ERRMSG("Convert remote file path to UTF8 failed, err msg: %s", pErr);
+            DBG_ERROR(m_szLastErrMsg);
             return false;
         }
     }
@@ -245,9 +264,11 @@ bool FtpConnector::FtpDownloadFile(LPCSTR szRemoteFilePath, LPCSTR szLocalFilePa
         {
             pFile->Close();
             SET_LAST_ERRMSG("Create local file failed, file path: %s,", szLocalFilePath);
+            DBG_ERROR(m_szLastErrMsg);
             return false;
         }
 
+        DBG_INFO("Download start");
         const int nBuffSize = 102400;
         char buff[nBuffSize] = { 0 };
         while (true)
@@ -264,22 +285,13 @@ bool FtpConnector::FtpDownloadFile(LPCSTR szRemoteFilePath, LPCSTR szLocalFilePa
 
         ofs.close();
         pFile->Close();
+        DBG_INFO("Download completed");
         return true;
-
-        /* GetFile的远端路径转成中文UTF8后，奇数个汉字服务器乱码
-                if (m_pConnection->GetFile(
-                strRemoteFilePath.GetBuffer(0), szLocalFilePath,
-                bFailIfExist, dwAttributes, dwFlags, dwContext))
-                return true;
-
-                DWORD dwErrCode = ::GetLastError();
-                std::string strErrMsg = GetFtpApiFailedErrMsg(dwErrCode);
-                SET_LAST_ERRMSG("Download failed, file: %s, err msg: %s, err code: %d",
-                szRemoteFilePath, strErrMsg.c_str(), dwErrCode);*/
     }
     catch (CInternetException *pEx)
     {
         InternetExceptionErrorOccured(pEx);
+        DBG_ERROR("Down load file failed");
     }
     return false;
 }
@@ -290,16 +302,19 @@ bool FtpConnector::FtpUploadFile(LPCSTR szLocalFilePath, LPCSTR szRemoteFilePath
     if (!m_pConnection)
     {
         SET_LAST_ERRMSG("m_pConnection is NULL");
+        DBG_ERROR(m_szLastErrMsg);
         return false;
     }
     if (!szLocalFilePath || !strlen(szLocalFilePath) || !szRemoteFilePath || !strlen(szRemoteFilePath))
     {
         SET_LAST_ERRMSG("File path is NULL or empty");
+        DBG_ERROR(m_szLastErrMsg);
         return false;
     }
 
     CString strRemoteFilePath = CString(m_strRootDir.c_str()) + szRemoteFilePath;
     CkCommon::FixSlash_FtpRemoteFilePath(strRemoteFilePath);
+    DBG_INFO("Remote file path is: %s", strRemoteFilePath);
 
     if (m_bEnableUtf8)
     {
@@ -307,6 +322,7 @@ bool FtpConnector::FtpUploadFile(LPCSTR szLocalFilePath, LPCSTR szRemoteFilePath
         if (!StringConvert::StrConv_A2Utf8(strRemoteFilePath, pErr))
         {
             SET_LAST_ERRMSG("Convert remote file path to UTF8 failed, err msg: %s", pErr);
+            DBG_ERROR(m_szLastErrMsg);
             return false;
         }
     }
@@ -317,6 +333,7 @@ bool FtpConnector::FtpUploadFile(LPCSTR szLocalFilePath, LPCSTR szRemoteFilePath
     if (ifs.fail())
     {
         SET_LAST_ERRMSG("Read local file failed, file path: %s,", szLocalFilePath);
+        DBG_ERROR(m_szLastErrMsg);
         return false;
     }
 
@@ -325,6 +342,7 @@ bool FtpConnector::FtpUploadFile(LPCSTR szLocalFilePath, LPCSTR szRemoteFilePath
         //文件打开失败会直接抛异常，不需要检查返回值
         CInternetFile* pFile = m_pConnection->OpenFile(strRemoteFilePath.GetBuffer(0), GENERIC_WRITE);
 
+        DBG_INFO("Upload start");
         const int nBuffSize = 102400;
         char buff[nBuffSize] = { 0 };
         while (true)
@@ -339,11 +357,13 @@ bool FtpConnector::FtpUploadFile(LPCSTR szLocalFilePath, LPCSTR szRemoteFilePath
         }
         pFile->Close();
         ifs.close();
+        DBG_INFO("Upload completed");
         return true;
     }
     catch (CInternetException *pEx)
     {
         InternetExceptionErrorOccured(pEx);
+        DBG_ERROR("Upload file failed");
     }
     ifs.close();
     return false;
@@ -390,25 +410,22 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, s
 	if (!m_pConnection)
 	{
 		SET_LAST_ERRMSG("m_pConnection is NULL");
+        DBG_ERROR(m_szLastErrMsg);
 		return false;
 	}
 	if (!szRemoteDir || !strlen(szRemoteDir))
 	{
 		SET_LAST_ERRMSG("File path is NULL or empty");
+        DBG_ERROR(m_szLastErrMsg);
 		return false;
 	}
     if (!szFileName)
         szFileName = "*.*";
-//    CkLogUtils::RecordingA(g_pLogUtils, LL_INFO, "4");
 
     CString strRemoteFilePath = 
         CString(m_strRootDir.c_str()) + CString(szRemoteDir) + "/" + CString(szFileName);
-//    CkLogUtils::RecordingA(g_pLogUtils, LL_INFO, strRemoteFilePath);
-
     CkCommon::FixSlash_FtpRemoteFilePath(strRemoteFilePath);
-
-
-//    CkLogUtils::RecordingA(g_pLogUtils, LL_INFO, strRemoteFilePath);
+    DBG_INFO("Remote file path is: %s", strRemoteFilePath);
 
     if (m_bEnableUtf8)
     {
@@ -416,9 +433,9 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, s
         if (!StringConvert::StrConv_A2Utf8(strRemoteFilePath, pErr))
         {
             SET_LAST_ERRMSG("Convert remote file path to UTF8 failed, err msg: %s", pErr);
+            DBG_ERROR(m_szLastErrMsg);
             return false;
         }
-//        CkLogUtils::RecordingA(g_pLogUtils, LL_INFO, "Path convert 2 utf8");
     }
 
     CFtpFileFind fileFinder(m_pConnection);
@@ -427,8 +444,6 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, s
 	try
 	{
         BOOL bFind = fileFinder.FindFile(strRemoteFilePath.GetBuffer(0));
-//        CkLogUtils::RecordingA(g_pLogUtils, LL_INFO, "Find file ret %d", bFind);
-
 		while (bFind)
 		{
 			bFind = fileFinder.FindNextFile();
@@ -489,7 +504,9 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, s
                         sprintf(fileInfo.szErrMsg, szFormat, "root", strRoot, pErr);
                         break;
                     }
-                } while (0);                
+                } while (0); 
+
+                if (!bRet) DBG_ERROR(fileInfo.szErrMsg);
             }
             fileInfo.bIsOK = bRet;
 
@@ -516,6 +533,7 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, s
         if (!vecFileInfos.size())
         {
             SET_LAST_ERRMSG("Cannot find file %s", szFileName);
+            DBG_ERROR(m_szLastErrMsg);
             return false;
         }
 	    fileFinder.Close();
@@ -524,6 +542,7 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, s
 	catch (CInternetException *pEx)
 	{
 		InternetExceptionErrorOccured(pEx);
+        DBG_ERROR("Find file failed");
         fileFinder.Close();
         return false;
 	}

@@ -3,12 +3,7 @@
 
 #include "stdafx.h"
 #include "FtpUtils.h"
-
-#ifdef DEBUG
-#include "LogUtils_ExportC.h"
-LogUtils * g_pLogUtils = CkLogUtils::CreateLogUtils();
-#pragma comment(lib, "LogUtils.lib")
-#endif // DEBUG
+#include "Common.hpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -17,14 +17,15 @@
 int _tmain(int argc, _TCHAR* argv[])
 {
     FtpConnector* p = CkFtpUtils::CreateFtpConnector(_T("FtpTest11"));
-	
-    if (!CkFtpUtils::ConnectFtp(p, "114.215.99.219", 21, "FtpTestUser", "1Q2W3E4R5T",true))
+    if (!CkFtpUtils::ConnectFtp(p, "114.215.99.219", 21, "FtpTestUser", "1Q2W3E4R5T", true))
 	//if (!CkFtpUtils::ConnectFtp(p, "114.215.99.219", 21, "FtpTestUserRW", "1Q2W3E4R5T", true))
     //if (!CkFtpUtils::ConnectFtp(p, "114.215.99.219", 21, "Administrator", "Cuckoo0615", true))
 	{
         CkFtpUtils::ReleaseFtpConnector(p);
         return 1;
     }
+
+    CkFtpUtils::GetFtpCurrentDir(p);
 
 	FtpFileInfo* pffi = NULL;
 	int nArrSize = 0;
