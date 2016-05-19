@@ -38,9 +38,12 @@ TU_DECLEAR_THREADENTRY(TransmitFunc)
             nCount -= _1M_BYTES_;
         }
     }
-	std::cout << std::endl;
 	::closesocket(arrSocket[0]);
 	::closesocket(arrSocket[1]);
+    std::cout 
+        << std::endl
+        << "Transmit thread exit" 
+        << std::endl;
 	return 0;
 }
 
@@ -68,7 +71,7 @@ TU_DECLEAR_THREADENTRY(AcceptingUpdater)
         if (INVALID_SOCKET == sNew)
             continue;
         g_sUpdater = sNew;
-        std::cout << "Updater connected" << std::endl;
+        std::cout << "Updater connected" << std::endl;       
         ::SetEvent(g_hEvent4Updater);
     }
     return 0;
@@ -88,19 +91,37 @@ TU_DECLEAR_THREADENTRY(AcceptingConsole)
         if (INVALID_SOCKET == sNew)
             continue;
         g_sConsole = sNew;
-        std::cout << "Console connected" << std::endl;
+        std::cout << "Console connected" << std::endl;      
         ::SetEvent(g_hEvent4Console);
     }
     return 0;
+}
+
+char arrBuff[1024] = { 0 };
+void PrintLine(const char* szFormat, ...)
+{
+    va_list argList;
+    va_start(argList, szFormat);
+    ::vsprintf(arrBuff, szFormat, argList);
+    va_end(argList);
+    std::cout << arrBuff << std::endl;
 }
 
 int _tmain(int argc, _TCHAR* argv[])
 {
     if (!g_bGlobalInited)
         return 0;
-
+    
+    PrintLine("Creating server sockets..");
     g_sServer4Updater = SocketUtils::CreateServerSocket_TCP(g_nErrCode, 61500);
     g_sServer4Console = SocketUtils::CreateServerSocket_TCP(g_nErrCode, 61501);
+    if (INVALID_SOCKET == g_sServer4Updater ||
+        INVALID_SOCKET == g_sServer4Console)
+    {
+        PrintLine("Create server socket failed");
+        return -1;
+    }
+    PrintLine("Server sockets created successful");
 
     if (!SocketUtils::ListenAt(g_nErrCode, g_sServer4Updater, 1))
     {
@@ -108,7 +129,7 @@ int _tmain(int argc, _TCHAR* argv[])
         ::closesocket(g_sServer4Updater);
         return 1;
     }
-    std::cout << "listening at: " << g_sServer4Updater << std::endl;
+    PrintLine("Server for updater listening at: %d", g_sServer4Updater);
 
     if (!SocketUtils::ListenAt(g_nErrCode, g_sServer4Console, 1))
     {
@@ -117,30 +138,33 @@ int _tmain(int argc, _TCHAR* argv[])
         ::closesocket(g_sServer4Console);
         return 1;
     }
-    std::cout << "listening at: " << g_sServer4Console << std::endl;
+    PrintLine("Server for console listening at: %d", g_sServer4Console);
     
     ThreadUtils tuAcceptingUpdater;
     ThreadUtils tuAcceptingConsole;
     if (!tuAcceptingUpdater.Run(AcceptingUpdater) ||
         !tuAcceptingConsole.Run(AcceptingConsole))
-        std::cout << "Create accepting thread failed" << std::endl;
-
+    {
+        PrintLine("Create accepting thread failed");
+        return -2;
+    }
+    
+    const HANDLE arrHandles[2] = { g_hEvent4Console, g_hEvent4Updater };
     while (true)
 	{
-        HANDLE arrHandles[2] = { g_hEvent4Console, g_hEvent4Updater };
+        std::cout << "=== Idle ===" << std::endl;
         ::WaitForMultipleObjects(2, arrHandles, TRUE, INFINITE);
-
         std::cout << "=== Transmit start ===" << std::endl;
 
         SOCKET arrConsoleUpdater[2] = { g_sConsole, g_sUpdater };
 		tuConsole2Updater.SetThreadParams(arrConsoleUpdater);
 		tuConsole2Updater.Run(TransmitFunc);
-		std::cout << "Console to updater tramsmiting" << std::endl;
+		std::cout << "Console to updater tramsmiting.." << std::endl;
 
         SOCKET arrUpdaterConsole[2] = { g_sUpdater, g_sConsole };
 		tuUpdater2Console.SetThreadParams(arrUpdaterConsole);
 		tuUpdater2Console.Run(TransmitFunc);
-		std::cout << "Updater to console tramsmiting" << std::endl;
+		std::cout << "Updater to console tramsmiting.." << std::endl;
 
 		tuConsole2Updater.Clean();
 		tuUpdater2Console.Clean();

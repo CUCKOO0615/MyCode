@@ -14,6 +14,9 @@
 #define YES   1111
 #define READY 2222
 
+static const int FILEINFO_LENGTH = 4/*FileLength*/ + 32/*MD5*/ + 256/*FilePath*/;
+static const int BUFF_LENGTH = 1024 * 800;
+
 bool CheckYes(SOCKET s)
 {
 	int nErrCode = 0;
@@ -42,9 +45,6 @@ bool QuestReady(SOCKET s)
     }
     return true;
 }
-
-static const int FILEINFO_LENGTH = 4/*FileLength*/ + 32/*MD5*/ + 256/*FilePath*/;
-static const int BUFF_LENGTH = 1024 * 800;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -98,7 +98,20 @@ int _tmain(int argc, _TCHAR* argv[])
             std::cout << "File size: " << nFileSize << std::endl;
 
             if (!QuestReady(sClient))
-                continue;
+            {
+                sClient = SocketUtils::CreateClientSocket_TCP(nErrCode, szIP, usPort);
+                if (INVALID_SOCKET == sClient)
+                {
+                    std::cout << "Reconnect to server failed." << std::endl;
+                    continue;
+                }
+                else
+                {
+                    std::cout << "Reconnect to server successful." << std::endl;
+                    QuestReady(sClient);
+                }
+            }
+
 			if (!CheckYes(sClient))
 				continue;
 			std::cout << "<Updater is ready>" << std::endl;

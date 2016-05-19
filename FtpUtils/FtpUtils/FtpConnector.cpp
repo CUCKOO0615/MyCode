@@ -44,6 +44,15 @@ FtpConnector::~FtpConnector()
     m_objSession.Close();
 }
 
+bool FtpConnector::ConnectionIsInited()
+{
+    if (m_pConnection)
+        return true;
+    SET_LAST_ERRMSG("m_pConnection is NULL");
+    DBG_ERROR(m_szLastErrMsg);
+    return false;
+}
+
 bool FtpConnector::CreateFtpConnection(LPCSTR szIP, USHORT usPort, LPCSTR szUserName, LPCSTR szPassword, bool bEnableUtf8, BOOL bPassive)
 {
     RESET_ERRMSG;
@@ -54,26 +63,23 @@ bool FtpConnector::CreateFtpConnection(LPCSTR szIP, USHORT usPort, LPCSTR szUser
 
         m_bEnableUtf8 = bEnableUtf8; //GetCurrentDirectory()正确执行的前提
         CString strFtpRootDir = GetFtpCurrentDir();
-        if ("ERROR" == strFtpRootDir)
+        if ("ERROR" != strFtpRootDir)
         {
-            DBG_ERROR("Get ftp root dir failed.");
-            m_bEnableUtf8 = false;
-            SafeCloseConnection();
-            return false;
+            CkCommon::FixSlash_FtpRemoteDirPath(strFtpRootDir);
+            m_strRootDir = strFtpRootDir.GetBuffer(0);
+            DBG_INFO("Connected to ftp server, root dir: %s", m_strRootDir.c_str());
+            return true;
         }
-        CkCommon::FixSlash_FtpRemoteDirPath(strFtpRootDir);
-        m_strRootDir = strFtpRootDir.GetBuffer(0);
-        DBG_INFO("Connected to ftp server, root dir: %s", m_strRootDir.c_str());
-        return true;
+        DBG_ERROR("Get ftp root dir failed.");
     }
     catch (CInternetException *pEx)
     {
-        m_bEnableUtf8 = false;
-        SafeCloseConnection();
         InternetExceptionErrorOccured(pEx);
-        DBG_ERROR("Connect to FTP server failed.");
-        return false;
     }
+    m_bEnableUtf8 = false;
+    SafeCloseConnection();
+    DBG_ERROR("Connect to FTP server failed.");
+    return false;
 }
 
 LPCSTR FtpConnector::GetFtpCurrentDir()
@@ -81,12 +87,8 @@ LPCSTR FtpConnector::GetFtpCurrentDir()
     RESET_ERRMSG;
     LPCTSTR szDefaultRetStr = "ERROR";
 
-    if (!m_pConnection)
-    {
-        SET_LAST_ERRMSG("m_pConnection is NULL");
-        DBG_ERROR(m_szLastErrMsg);
+    if (!ConnectionIsInited())
         return szDefaultRetStr;
-    }
 
     CString strCurDir;
     try
@@ -125,12 +127,8 @@ LPCSTR FtpConnector::GetFtpCurrentDir()
 bool FtpConnector::SetFtpCurrentDir(LPCSTR szDirPath)
 {
     RESET_ERRMSG;
-    if (!m_pConnection)
-    {
-        SET_LAST_ERRMSG("m_pConnection is NULL");
-        DBG_ERROR(m_szLastErrMsg);
+    if (!ConnectionIsInited())
         return false;
-    }
     if (!szDirPath) szDirPath = "/";
 
     CString strDirPath(m_strRootDir.c_str());
@@ -171,12 +169,8 @@ bool FtpConnector::SetFtpCurrentDir(LPCSTR szDirPath)
 bool FtpConnector::FtpRemoveFile(LPCSTR szRemoteDirPath, LPCSTR szFileName)
 {
     RESET_ERRMSG;
-    if (!m_pConnection)
-    {
-        SET_LAST_ERRMSG("m_pConnection is NULL");
-        DBG_ERROR(m_szLastErrMsg);
+    if (!ConnectionIsInited())
         return false;
-    }
     if (!szFileName || !strlen(szFileName))
     {
         SET_LAST_ERRMSG("File name is NULL or empty");
@@ -224,12 +218,8 @@ bool FtpConnector::FtpDownloadFile(LPCSTR szRemoteFilePath, LPCSTR szLocalFilePa
     BOOL bFailIfExist, DWORD dwAttributes, DWORD dwFlags, DWORD_PTR dwContext*/)
 {
     RESET_ERRMSG;
-    if (!m_pConnection)
-    {
-        SET_LAST_ERRMSG("m_pConnection is NULL");
-        DBG_ERROR(m_szLastErrMsg);
-        return false;
-    }
+    if (!ConnectionIsInited())
+        return false;   
     if (!szLocalFilePath || !strlen(szLocalFilePath) || !szRemoteFilePath || !strlen(szRemoteFilePath))
     {
         SET_LAST_ERRMSG("File path is NULL or empty");
@@ -299,12 +289,8 @@ bool FtpConnector::FtpDownloadFile(LPCSTR szRemoteFilePath, LPCSTR szLocalFilePa
 bool FtpConnector::FtpUploadFile(LPCSTR szLocalFilePath, LPCSTR szRemoteFilePath)
 {
     RESET_ERRMSG;
-    if (!m_pConnection)
-    {
-        SET_LAST_ERRMSG("m_pConnection is NULL");
-        DBG_ERROR(m_szLastErrMsg);
+    if (!ConnectionIsInited())
         return false;
-    }
     if (!szLocalFilePath || !strlen(szLocalFilePath) || !szRemoteFilePath || !strlen(szRemoteFilePath))
     {
         SET_LAST_ERRMSG("File path is NULL or empty");
@@ -407,12 +393,8 @@ time_t FtpConnector::FileTime2Timet(const FILETIME& ft)
 bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, std::vector<FtpFileInfo>& vecFileInfos)
 {
 	RESET_ERRMSG;
-	if (!m_pConnection)
-	{
-		SET_LAST_ERRMSG("m_pConnection is NULL");
-        DBG_ERROR(m_szLastErrMsg);
-		return false;
-	}
+    if (!ConnectionIsInited())
+        return false;
 	if (!szRemoteDir || !strlen(szRemoteDir))
 	{
 		SET_LAST_ERRMSG("File path is NULL or empty");
@@ -547,4 +529,5 @@ bool FtpConnector::FtpGetFileInfosInDir(LPCSTR szRemoteDir, LPCSTR szFileName, s
         return false;
 	}
 }
+
 

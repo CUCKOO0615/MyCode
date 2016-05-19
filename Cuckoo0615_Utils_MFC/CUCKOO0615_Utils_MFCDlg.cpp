@@ -42,6 +42,16 @@ BEGIN_MESSAGE_MAP(CCUCKOO0615_Utils_MFCDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
+CString CutRelativePathByKeyword(const CString &strFullPath, const char* szKeyword)
+{
+    CString strRet = strFullPath.Mid(strFullPath.Find("connection"));
+    while (0 != strRet.Replace("\\\\", "\\")); // 合并所有连续的反斜线
+    strRet.Replace("\\", "\\\\");            // ‘\’全部替换为‘\\’
+    strRet = "\\\\" + strRet;               // 添加前缀‘\\’
+    return strRet;
+}
+
+
 // CCUCKOO0615_Utils_MFCDlg 消息处理程序
 
 BOOL CCUCKOO0615_Utils_MFCDlg::OnInitDialog()
@@ -54,10 +64,10 @@ BOOL CCUCKOO0615_Utils_MFCDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
-        CStringA a = "qxxxkb2016047.doc";
-        if (0 == a.Left(6).CompareNoCase("qxxxkb"));
 
-        CStringA b = a.Mid(6, 4);
+
+    CString str = "D:\\tomcat-mds\\webapps\\MDS\\connection\\yb\\\\sz140404.txt";
+    CString fileUrl = CutRelativePathByKeyword(str, "connection");
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }

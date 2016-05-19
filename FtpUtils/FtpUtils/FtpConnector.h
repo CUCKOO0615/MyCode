@@ -139,7 +139,8 @@ private:
 	std::string m_strCurrentDir;
 	char m_szLastErrMsg[1024];
 
-	void SafeCloseConnection();	//安全关闭m_pConnection并赋值为NULL
+    bool ConnectionIsInited();  // 检查m_pConnection是否已经成功创建
+	void SafeCloseConnection();	// 安全关闭m_pConnection并赋值为NULL
 	std::string GetFtpApiFailedErrMsg(DWORD dwErrCode);
 	void InternetExceptionErrorOccured(CInternetException* pEx);
     time_t FileTime2Timet(const FILETIME& ft);
@@ -171,4 +172,3 @@ inline void FtpConnector::SafeCloseConnection()
 		m_pConnection->Close();
 	m_pConnection = NULL;
 }
-
