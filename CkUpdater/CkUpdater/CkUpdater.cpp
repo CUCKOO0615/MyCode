@@ -43,7 +43,7 @@ bool CheckReady(SOCKET s)
 }
 
 static const int FILEINFO_LENGTH = 4/*FileLength*/ + 32/*MD5*/ + 256/*FilePath*/;
-static const int BUFF_LENGTH = 1024 * 800;
+static const int BUFF_LENGTH = 1024 * 1024;
 
 bool GetFiles(SOCKET s)
 {
@@ -75,7 +75,7 @@ bool GetFiles(SOCKET s)
 		return false;
     }
 
-	std::cout << "Writing file (800KB/*):" << szFileName << std::endl;
+	std::cout << "Writing file (1MB/*):" << szFileName << std::endl;
 	char arrBuff[BUFF_LENGTH] = { 0 };
 	while (nFileLength)
 	{
@@ -159,9 +159,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
     struct timeval timeout = { 30, 0 };
 
-    //std::wstring wstr = argv[1];
-    std::string strAddr(argv[1]), strIP, strPort, strErrMsg;
-    //StringUtils::StrConv_W2A(wstr.c_str(), strAddr, strErrMsg);
+    std::wstring wstr = argv[1];
+    std::string strAddr, strIP, strPort, strErrMsg;
+    StringUtils::StrConv_W2A(wstr.c_str(), strAddr, strErrMsg);
 
 	size_t nPos = strAddr.find(':');
 	if (std::string::npos == nPos)

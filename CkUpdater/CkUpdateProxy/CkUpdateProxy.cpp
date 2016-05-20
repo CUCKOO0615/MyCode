@@ -7,7 +7,9 @@
 #include "ThreadUtils.hpp"
 #include "AutoManager.hpp"
 
-#define BUFF_LENGTH 1024*1000
+#define BUFF_LENGTH 1024*2048
+char g_recvBuff[BUFF_LENGTH] = { 0 };
+
 #define PRINT_SOCKET_ERRMSG \
 	std::cout<<SocketUtils::QueryErrMsg(g_nErrCode)<<std::endl
 
@@ -16,17 +18,14 @@ int g_nErrCode = 0;
 const int _1M_BYTES_ = 1024 * 1024;
 TU_DECLEAR_THREADENTRY(TransmitFunc)
 {
-	SOCKET* arrSocket = (SOCKET*)pParam;
-	char arrBuff[BUFF_LENGTH] = { 0 };
-
+	SOCKET* arrSocket = (SOCKET*)pParam;	
     int nCount = 0;
 	while (true)
     {
-        ::memset(arrBuff, 0x00, BUFF_LENGTH);
-        int nRecv = ::recv(arrSocket[0], arrBuff, BUFF_LENGTH, 0);
+        int nRecv = ::recv(arrSocket[0], g_recvBuff, BUFF_LENGTH, 0);
         if (!nRecv || SOCKET_ERROR == nRecv)
             break;
-        if (!SocketUtils::SendToSocket(arrSocket[1], arrBuff, nRecv, g_nErrCode))
+        if (!SocketUtils::SendToSocket(arrSocket[1], g_recvBuff, nRecv, g_nErrCode))
         {
             PRINT_SOCKET_ERRMSG;
             break;
@@ -97,14 +96,14 @@ TU_DECLEAR_THREADENTRY(AcceptingConsole)
     return 0;
 }
 
-char arrBuff[1024] = { 0 };
+char charBuff[1024] = { 0 };
 void PrintLine(const char* szFormat, ...)
 {
     va_list argList;
     va_start(argList, szFormat);
-    ::vsprintf(arrBuff, szFormat, argList);
+	::vsprintf(charBuff, szFormat, argList);
     va_end(argList);
-    std::cout << arrBuff << std::endl;
+	std::cout << charBuff << std::endl;
 }
 
 int _tmain(int argc, _TCHAR* argv[])
