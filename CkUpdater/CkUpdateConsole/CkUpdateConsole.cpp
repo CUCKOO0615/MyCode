@@ -15,7 +15,7 @@
 #define READY 2222
 
 static const int FILEINFO_LENGTH = 4/*FileLength*/ + 32/*MD5*/ + 256/*FilePath*/;
-static const int BUFF_LENGTH = 1024 * 800;
+static const int BUFF_LENGTH = 5840/*1024 * 800*/;
 
 bool CheckYes(SOCKET s)
 {
@@ -51,9 +51,10 @@ int _tmain(int argc, _TCHAR* argv[])
     if (!g_bGlobalInited || argc < 2)
         return 1;
 
-    std::wstring wstr = argv[1];
-    std::string strAddr, strIP, strPort, strErrMsg;
-    StringUtils::StrConv_W2A(wstr.c_str(), strAddr, strErrMsg);
+    //std::wstring wstr = argv[1];
+    std::string strAddr(argv[1]), strIP, strPort, strErrMsg;
+    //StringUtils::StrConv_W2A(wstr.c_str(), strAddr, strErrMsg);
+
 
     size_t nPos = strAddr.find(':');
     if (std::string::npos == nPos)
@@ -77,16 +78,18 @@ int _tmain(int argc, _TCHAR* argv[])
         std::cout << SocketUtils::QueryErrMsg(nErrCode) << std::endl;
   		return 2;  
     }
-
+    std::cout << "==== Connected to server ====" << std::endl;
     string strInput;
     FileUtils fu;
-    while (std::cin >> strInput)
+    while (true)
     {
-        size_t nPos = strInput.find('_');
+        std::getline(std::cin, strInput);
+        size_t nPos = strInput.find(' ');
         if (string::npos == nPos)
             continue;
 
         string strCommand = strInput.substr(0, nPos);
+        StringUtils::Trim(strCommand, ' ');
         if (0 == ::stricmp("update", strCommand.c_str()))
         {
             string strFilePath = strInput.substr(nPos + 1);

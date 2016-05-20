@@ -80,6 +80,7 @@ bool GetFiles(SOCKET s)
 	while (nFileLength)
 	{
 		int nRecv = min(nFileLength, BUFF_LENGTH);
+        std::cout <<"nRecv£º"<<nRecv << endl;
         if (!SocketUtils::RecvFromSocket(s, arrBuff, nRecv, nErrCode))
         {
             std::cout
@@ -156,9 +157,11 @@ int _tmain(int argc, _TCHAR* argv[])
     if (!g_bGlobalInited || argc < 2)
         return 1;
 
-    std::wstring wstr = argv[1];
-    std::string strAddr, strIP, strPort, strErrMsg;
-    StringUtils::StrConv_W2A(wstr.c_str(), strAddr, strErrMsg);
+    struct timeval timeout = { 30, 0 };
+
+    //std::wstring wstr = argv[1];
+    std::string strAddr(argv[1]), strIP, strPort, strErrMsg;
+    //StringUtils::StrConv_W2A(wstr.c_str(), strAddr, strErrMsg);
 
 	size_t nPos = strAddr.find(':');
 	if (std::string::npos == nPos)
@@ -181,7 +184,7 @@ int _tmain(int argc, _TCHAR* argv[])
         if (!CreateClientSocket(g_sClient, szIP, usPort))
             continue;
         std::cout << "*** Connected to server ***" << std::endl;
-
+             
         while (true)
         {
             std::cout << "==== Start update ====" << std::endl;

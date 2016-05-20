@@ -22,6 +22,7 @@ TU_DECLEAR_THREADENTRY(TransmitFunc)
     int nCount = 0;
 	while (true)
     {
+        ::memset(arrBuff, 0x00, BUFF_LENGTH);
         int nRecv = ::recv(arrSocket[0], arrBuff, BUFF_LENGTH, 0);
         if (!nRecv || SOCKET_ERROR == nRecv)
             break;
@@ -30,7 +31,6 @@ TU_DECLEAR_THREADENTRY(TransmitFunc)
             PRINT_SOCKET_ERRMSG;
             break;
         }
-
         nCount += nRecv;
         if (nCount >= _1M_BYTES_)
         {
