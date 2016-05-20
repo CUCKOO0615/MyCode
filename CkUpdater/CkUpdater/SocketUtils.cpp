@@ -160,7 +160,6 @@ bool SocketUtils::RecvFromSocket(SOCKET s, char* pBuffer, int nSpecLength, int& 
     while (nRecvedLen < nSpecLength)
     {
         int nRecv = ::recv(s, pBuffer + nRecvedLen, nSpecLength - nRecvedLen, NULL);
-        std::cout << nRecv << std::endl;
         if (SOCKET_ERROR == nRecv)
         {
             nErrCode = ::WSAGetLastError();
