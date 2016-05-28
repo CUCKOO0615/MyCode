@@ -119,7 +119,7 @@ int _tmain(int argc, _TCHAR* argv[])
             {
                 sClient = SocketUtils::CreateClientSocket_TCP(nErrCode, szIP, usPort);
 				ConsoleWriteLine(">> Reconnect to server %s",
-					(INVALID_SOCKET == sClient) ? "successful" : "failed");
+					(INVALID_SOCKET == sClient) ? "failed" : "successful");
 				continue;
             }
 
