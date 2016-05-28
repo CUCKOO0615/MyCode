@@ -94,11 +94,9 @@ inline unsigned int ThreadUtils::GetThreadID() const
 
 inline void ThreadUtils::Clean()
 {
-    ::WaitForSingleObject(m_hThreadHandle, INFINITE);
+    //::WaitForSingleObject(m_hThreadHandle, INFINITE);
     ::CloseHandle(m_hThreadHandle);
     m_hThreadHandle = 0;
-
     m_uThreadID = 0;
-
     m_pArgList = NULL;
 }

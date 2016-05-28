@@ -13,61 +13,64 @@
 #define YES   1111
 #define READY 2222
 
+void ConsoleWriteLine(const char* szText)
+{
+	if (!szText) return;
+	std::cout << szText << std::endl;
+}
+
 bool ReplayYes(SOCKET s)
 {
 	int nErrCode = 0;
-    int nSend = YES;
-    if (!SocketUtils::SendToSocket(s, (char*)&nSend, sizeof(int), nErrCode))
-    {
-        std::cout << SocketUtils::QueryErrMsg(nErrCode) << std::endl;
-        return false;
-	}
-	return true;
+	int nSend = YES;
+	if (SocketUtils::SendToSocket(s, (char*)&nSend, sizeof(int), nErrCode))
+		return true;
+	ConsoleWriteLine(SocketUtils::QueryErrMsg(nErrCode));
+	return false;
 }
 
 bool CheckReady(SOCKET s)
 {
 	int nErrCode = 0;
-    int nSend = READY;
-    if (!SocketUtils::RecvFromSocket(s, (char*)&nSend, sizeof(int), nErrCode))
+    int nReply = READY;
+	if (!SocketUtils::RecvFromSocket(s, (char*)&nReply, sizeof(int), nErrCode))
 	{
-		std::cout << SocketUtils::QueryErrMsg(nErrCode) << std::endl;
+		ConsoleWriteLine(SocketUtils::QueryErrMsg(nErrCode));
 		return false;
 	}
-    if (READY != nSend)
+	if (READY != nReply)
 	{
-		std::cout << "Command error" << std::endl;
+		ConsoleWriteLine("Command error");
 		return false;
 	}
 	return true;
 }
 
-static const int FILEINFO_LENGTH = 4/*FileLength*/ + 32/*MD5*/ + 256/*FilePath*/;
-static const int BUFF_LENGTH = 1024 * 1024;
+static const int BUFF_LENGTH = 1024;
+static const int _1M_BYTES_ = 1024*1024;
+
+typedef struct stuFileInfo
+{
+	size_t nFileLength;
+	char szMD5[32];
+	char szFileName[256];
+}FILE_INFO;
 
 bool GetFiles(SOCKET s)
 {
 	int nErrCode = 0;
-    char arrFileInfos[FILEINFO_LENGTH] = { 0 };
-    if (!SocketUtils::RecvFromSocket(s, arrFileInfos, FILEINFO_LENGTH, nErrCode))
+	FILE_INFO fileInfo;
+	::memset(&fileInfo, 0x00, sizeof(FILE_INFO));
+	if (!SocketUtils::RecvFromSocket(s, (char*)&fileInfo, sizeof(FILE_INFO), nErrCode))
     {
-        std::cout
-            << "Receive file infos failed. Err msg: "
-            << SocketUtils::QueryErrMsg(nErrCode)
-            << std::endl;
+		ConsoleWriteLine("Receive file infos failed. Err msg: ");
+		ConsoleWriteLine(SocketUtils::QueryErrMsg(nErrCode));       
         return false;
     }
-	std::cout << "File infos received" << std::endl;
-
-	size_t nFileLength;
-	char szMD5[32] = { 0 };
-	char szFileName[256] = { 0 };
-	::memcpy(&nFileLength, arrFileInfos, 4);
-	::memcpy(szMD5, arrFileInfos + 4, 32);
-	::memcpy(szFileName, arrFileInfos + 4 + 32, 256);
-    
+	ConsoleWriteLine("File infos received");
+	    
     std::string strNewFileName = 
-        std::string(szFileName) + "_temp";
+		std::string(fileInfo.szFileName) + "_temp";
     std::ofstream ofs(strNewFileName.c_str(), std::ios::binary);
     if (ofs.fail())
     {
@@ -75,32 +78,36 @@ bool GetFiles(SOCKET s)
 		return false;
     }
 
-	std::cout << "Writing file (1MB/*):" << szFileName << std::endl;
+	std::cout 
+		<< "Writing file (1MB/*): " 
+		<< fileInfo.szFileName 
+		<< std::endl;
+
 	char arrBuff[BUFF_LENGTH] = { 0 };
+	int nCounter = 0;
+	int nFileLength = fileInfo.nFileLength;
 	while (nFileLength)
 	{
 		int nRecv = min(nFileLength, BUFF_LENGTH);
-        std::cout <<"nRecv£º"<<nRecv << endl;
         if (!SocketUtils::RecvFromSocket(s, arrBuff, nRecv, nErrCode))
         {
-            std::cout
-                << "Err occured during pulling file content. Err msg: "
-                << SocketUtils::QueryErrMsg(nErrCode)
-                << std::endl;
+			ConsoleWriteLine("Err occured during pulling file content. Err msg: ");
+			ConsoleWriteLine(SocketUtils::QueryErrMsg(nErrCode));
             ofs.close();
             return false;
         }
 		ofs.write(arrBuff, nRecv);
 		nFileLength -= nRecv;
-		std::cout <<"*";
+		nCounter += nRecv;
+		if (nCounter > _1M_BYTES_)
+		{
+			nCounter -= _1M_BYTES_;
+			std::cout << ">";
+		}
     }
     ofs.close();
-    std::cout 
-        << std::endl
-        << "Write file completed."
-        << std::endl;
-
-    std::cout << "Checking md5.." << std::endl;
+	ConsoleWriteLine("Write file completed. Checking md5..");  
+	
     std::ifstream ifs(strNewFileName.c_str(), std::ios::binary);
     if (ifs.fail())
     {
@@ -110,22 +117,21 @@ bool GetFiles(SOCKET s)
     MD5 md5;
     md5.update(ifs);
     ifs.close();
-    std::string strMD5 = md5.toString();
-    if (0 != ::memcmp(strMD5.c_str(), szMD5, 32))
+	if (0 != ::memcmp(md5.toString().c_str(), fileInfo.szMD5, 32))
     {
-        std::cout << "Check md5 failed." << std::endl;
+		ConsoleWriteLine("Check md5 failed.");
         return false;
     }
-    std::cout << "Check md5 successful" << std::endl;
+	ConsoleWriteLine("Check md5 successful.");
 
-    if (!::_access(szFileName, 0) && ::remove(szFileName))
+	if (!::_access(fileInfo.szFileName, 0) && ::remove(fileInfo.szFileName))
     {
-        std::cout << "Remove old file failed" << endl;
+		ConsoleWriteLine("Remove old file failed");
         return false;
     }
-    if (::rename(strNewFileName.c_str(),szFileName))
+	if (::rename(strNewFileName.c_str(), fileInfo.szFileName))
     {
-        std::cout << "Rename temp file failed" << endl;
+		ConsoleWriteLine("Rename temp file failed");    
         return false;
     }
     return true;
@@ -159,9 +165,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
     struct timeval timeout = { 30, 0 };
 
-    std::wstring wstr = argv[1];
-    std::string strAddr, strIP, strPort, strErrMsg;
-    StringUtils::StrConv_W2A(wstr.c_str(), strAddr, strErrMsg);
+    //std::wstring wstr = argv[1];
+	std::string strAddr(argv[1]), strIP, strPort, strErrMsg;
+    //StringUtils::StrConv_W2A(wstr.c_str(), strAddr, strErrMsg);
 
 	size_t nPos = strAddr.find(':');
 	if (std::string::npos == nPos)
@@ -187,7 +193,7 @@ int _tmain(int argc, _TCHAR* argv[])
              
         while (true)
         {
-            std::cout << "==== Start update ====" << std::endl;
+            std::cout << "====[ START UPDATE ]====" << std::endl;
             if (!CheckReady(g_sClient))
                 break;
             if (!ReplayYes(g_sClient))
@@ -197,7 +203,7 @@ int _tmain(int argc, _TCHAR* argv[])
                 break;
             if (!ReplayYes(g_sClient))
                 break;
-            std::cout << "==== Update completed ====" << std::endl;
+            std::cout << "====[ UPDATE COMPLETED ]====" << std::endl;
         }
     }
 	return 0;

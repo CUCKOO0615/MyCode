@@ -14,18 +14,24 @@
 #define YES   1111
 #define READY 2222
 
-static const int FILEINFO_LENGTH = 4/*FileLength*/ + 32/*MD5*/ + 256/*FilePath*/;
 static const int BUFF_LENGTH = 1024/* * 500*/;
+
+char charBuff[BUFF_LENGTH] = { 0 };
+void ConsoleWriteLine(const char* szFormat, ...)
+{
+	va_list argList;
+	va_start(argList, szFormat);
+	::vsprintf(charBuff, szFormat, argList);
+	va_end(argList);
+	std::cout << charBuff << std::endl;
+}
 
 bool CheckYes(SOCKET s)
 {
 	int nErrCode = 0;
 	int nRecv = 0;
     if (!SocketUtils::RecvFromSocket(s, (char*)&nRecv, sizeof(int), nErrCode))
-	{
-		std::cout << SocketUtils::QueryErrMsg(nErrCode) << std::endl;
 		return false;
-	}
     if (YES != nRecv)
 	{
 		std::cout << "Check reply failed" << std::endl;
@@ -38,22 +44,23 @@ bool QuestReady(SOCKET s)
 {
     int nErrCode = 0;
     int nQuest = READY;
-    if (!SocketUtils::SendToSocket(s, (char*)&nQuest, sizeof(int), nErrCode))
-    {
-        std::cout << SocketUtils::QueryErrMsg(nErrCode) << std::endl;
-        return false;
-    }
-    return true;
+	return SocketUtils::SendToSocket(s, (char*)&nQuest, sizeof(int), nErrCode);
 }
+
+
+typedef struct stuFileInfo
+{
+	size_t nFileLength;
+	char szMD5[32];
+	char szFileName[256];
+}FILE_INFO;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
     if (!g_bGlobalInited || argc < 2)
         return 1;
 
-    //std::wstring wstr = argv[1];
 	std::string strAddr(argv[1]), strIP, strPort, strErrMsg;
-    //StringUtils::StrConv_W2A(wstr.c_str(), strAddr, strErrMsg);
 	
     size_t nPos = strAddr.find(':');
     if (std::string::npos == nPos)
@@ -77,77 +84,70 @@ int _tmain(int argc, _TCHAR* argv[])
         std::cout << SocketUtils::QueryErrMsg(nErrCode) << std::endl;
   		return 2;  
     }
-    std::cout << "==== Connected to server ====" << std::endl;
+	ConsoleWriteLine("====[ Connected to server ]====");
+
     string strInput;
     FileUtils fu;
-    while (true)
-    {
-        std::getline(std::cin, strInput);
-        size_t nPos = strInput.find(' ');
-        if (string::npos == nPos)
+	FILE_INFO fileInfo;
+	while (true)
+	{
+		ConsoleWriteLine("====[ <<<< IDLE >>>> ]====");
+		::memset(&fileInfo, 0x00, sizeof(FILE_INFO));
+
+		std::getline(std::cin, strInput);
+		size_t nPos = strInput.find(' ');
+		if (string::npos == nPos)
             continue;
 
         string strCommand = strInput.substr(0, nPos);
         StringUtils::Trim(strCommand, ' ');
+
         if (0 == ::stricmp("update", strCommand.c_str()))
         {
             string strFilePath = strInput.substr(nPos + 1);
-            std::cout << "Updateing: " << strFilePath << std::endl;
+			::memcpy(fileInfo.szFileName, strFilePath.c_str(), strFilePath.length());
+			ConsoleWriteLine(">> Updateing: %s", fileInfo.szFileName);
+			
+			size_t nFileSize = fu.GetFileSize(fileInfo.szFileName);
+			ConsoleWriteLine(">> File size: %d", nFileSize);    
 
-            size_t nFileSize = fu.GetFileSize(strFilePath.c_str());
-            if (!nFileSize)
-                continue;
-            std::cout << "File size: " << nFileSize << std::endl;
+            if (!nFileSize) 
+				continue;
+			fileInfo.nFileLength = nFileSize;
 
             if (!QuestReady(sClient))
             {
                 sClient = SocketUtils::CreateClientSocket_TCP(nErrCode, szIP, usPort);
-                if (INVALID_SOCKET == sClient)
-                {
-                    std::cout << "Reconnect to server failed." << std::endl;
-                    continue;
-                }
-                else
-                {
-                    std::cout << "Reconnect to server successful." << std::endl;
-                    QuestReady(sClient);
-                }
+				ConsoleWriteLine(">> Reconnect to server %s",
+					(INVALID_SOCKET == sClient) ? "successful" : "failed");
+				continue;
             }
 
 			if (!CheckYes(sClient))
 				continue;
-			std::cout << "<Updater is ready>" << std::endl;
-
-            char arrFileInfos[FILEINFO_LENGTH] = { 0 };
-			::memcpy(arrFileInfos, &nFileSize, 4);
-			::memcpy(arrFileInfos + 4 + 32, strFilePath.c_str(), strFilePath.length());
-
+			ConsoleWriteLine("==[ Updater is ready ]==");		
+			
 			std::ifstream ifs(strFilePath.c_str(), std::ios::binary);
             if (ifs.fail())
             {
-                std::cout << "Open file failed" << std::endl;
+				ConsoleWriteLine(">>¡¡Open file failed£®");
 				continue;
             }
 
 			MD5 md5;
 			md5.update(ifs);
-			std::string strMD5 = md5.toString();
-			::memcpy(arrFileInfos + 4, strMD5.c_str(), 32);
-            std::cout << "MD5: " << strMD5 << std::endl;
+			::memcpy(fileInfo.szMD5, md5.toString().c_str(), 32);
+			ConsoleWriteLine(">> MD5: %s", fileInfo.szMD5);
 
-            if (!SocketUtils::SendToSocket(sClient, arrFileInfos, FILEINFO_LENGTH, nErrCode))
-            {
-                std::cout 
-                    << "Send file infos failed, err msg: " 
-                    << SocketUtils::QueryErrMsg(nErrCode) 
-                    << std::endl;
-                continue;
-            }
-            std::cout << "File infos send successful." << std::endl;
+            if (!SocketUtils::SendToSocket(sClient, (char*)&fileInfo, sizeof(FILE_INFO), nErrCode))
+			{
+				ConsoleWriteLine("Send file infos failed");
+				continue;
+			}
+			ConsoleWriteLine("Send file infos successful");
+			ConsoleWriteLine("Reading file: %s", strFilePath.c_str());
 
             char arrBuff[BUFF_LENGTH] = { 0 };
-            std::cout << "Reading file: " << strFilePath.c_str() << std::endl;
-
 			int nCounter = 0;
             while (EOF != ifs.peek())
             {
@@ -156,7 +156,11 @@ int _tmain(int argc, _TCHAR* argv[])
                 if (!nRead)
                     break;
 				if (!SocketUtils::SendToSocket(sClient, arrBuff, nRead, nErrCode))
+				{
+					ConsoleWriteLine("Send file content failed, err msg: %s",
+						SocketUtils::QueryErrMsg(nErrCode));
 					break;
+				}
 
 				nCounter += nRead;
 				if (nCounter >= 1024 * 100)
@@ -165,15 +169,13 @@ int _tmain(int argc, _TCHAR* argv[])
 					nCounter -= 1024 * 100;
 				}
 			}
-
 			ifs.close();
-            std::cout 
-                << std::endl
-                << "File content send completed"
-                << std::endl;
 
+			ConsoleWriteLine("File content send completed"); 
 			if(CheckYes(sClient))
-				std::cout << "Update completed." << std::endl;
+				ConsoleWriteLine("====[ Update successful ]====");
+			else
+				ConsoleWriteLine("====[!! Update failed !!]====");
 		}
 	}
 	return 0;

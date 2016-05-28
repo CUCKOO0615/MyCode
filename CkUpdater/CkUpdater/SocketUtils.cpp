@@ -166,7 +166,7 @@ bool SocketUtils::RecvFromSocket(SOCKET s, char* pBuffer, int nSpecLength, int& 
             return false;
         }
         if (0 == nRecv)
-            continue;
+            return false;
         nRecvedLen += nRecv;
     }
     return true;

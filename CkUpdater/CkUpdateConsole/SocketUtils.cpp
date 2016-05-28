@@ -7,6 +7,7 @@
 
 #include "StdAfx.h"
 #include "SocketUtils.h"
+#include <iostream>
 
 bool SocketUtils::m_bIsInited = false;
 
@@ -154,21 +155,21 @@ bool SocketUtils::SendToSocket(SOCKET s, char* pBuffer, int nSpecLength, int& nE
 
 bool SocketUtils::RecvFromSocket(SOCKET s, char* pBuffer, int nSpecLength, int& nErrCode)
 {
-	nErrCode = 0;
-	int nRecvedLen = 0;
-	while (nRecvedLen < nSpecLength)
-	{
-		int nRecv = ::recv(s, pBuffer + nRecvedLen, nSpecLength - nRecvedLen, NULL);
-		if (SOCKET_ERROR == nRecv)
-		{
-			nErrCode = ::WSAGetLastError();
-			return false;
-		}
-		if (0 == nRecv)	           
-			continue;
-		nRecvedLen += nRecv;
-	}
-	return true;
+    nErrCode = 0;
+    int nRecvedLen = 0;
+    while (nRecvedLen < nSpecLength)
+    {
+        int nRecv = ::recv(s, pBuffer + nRecvedLen, nSpecLength - nRecvedLen, NULL);
+        if (SOCKET_ERROR == nRecv)
+        {
+            nErrCode = ::WSAGetLastError();
+            return false;
+        }
+        if (0 == nRecv)
+            return false;
+        nRecvedLen += nRecv;
+    }
+    return true;
 }
 
 bool SocketUtils::GetAddressBySocket(SOCKET s, SOCKADDR_IN & addr, int& nErrCode)
