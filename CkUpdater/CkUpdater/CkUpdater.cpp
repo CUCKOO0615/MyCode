@@ -13,10 +13,15 @@
 #define YES   1111
 #define READY 2222
 
-void ConsoleWriteLine(const char* szText)
+char charBuff[1024] = { 0 };
+void ConsoleWriteLine(const char* szFormat, ...)
 {
-	if (!szText) return;
-	std::cout << szText << std::endl;
+    va_list argList;
+    va_start(argList, szFormat);
+    ::vsprintf(charBuff, szFormat, argList);
+    va_end(argList);
+    ::strcat(charBuff, "\n");
+    ::printf(charBuff);
 }
 
 bool ReplayYes(SOCKET s)
@@ -24,8 +29,8 @@ bool ReplayYes(SOCKET s)
 	int nErrCode = 0;
 	int nSend = YES;
 	if (SocketUtils::SendToSocket(s, (char*)&nSend, sizeof(int), nErrCode))
-		return true;
-	ConsoleWriteLine(SocketUtils::QueryErrMsg(nErrCode));
+		return true;    
+    ::printf("%s\n", SocketUtils::QueryErrMsg(nErrCode));
 	return false;
 }
 
@@ -35,19 +40,18 @@ bool CheckReady(SOCKET s)
     int nReply = READY;
 	if (!SocketUtils::RecvFromSocket(s, (char*)&nReply, sizeof(int), nErrCode))
 	{
-		ConsoleWriteLine(SocketUtils::QueryErrMsg(nErrCode));
+        ::printf("%s\n", SocketUtils::QueryErrMsg(nErrCode));
 		return false;
 	}
 	if (READY != nReply)
 	{
-		ConsoleWriteLine("Command error");
+        ::printf("%s\n", "Command error");
 		return false;
 	}
 	return true;
 }
 
 static const int BUFF_LENGTH = 1024;
-static const int _1M_BYTES_ = 1024*1024;
 
 typedef struct stuFileInfo
 {
@@ -63,55 +67,61 @@ bool GetFiles(SOCKET s)
 	::memset(&fileInfo, 0x00, sizeof(FILE_INFO));
 	if (!SocketUtils::RecvFromSocket(s, (char*)&fileInfo, sizeof(FILE_INFO), nErrCode))
     {
-		ConsoleWriteLine("Receive file infos failed. Err msg: ");
-		ConsoleWriteLine(SocketUtils::QueryErrMsg(nErrCode));       
+        ::printf("Receive file infos failed. Err msg: %s. \n",
+            SocketUtils::QueryErrMsg(nErrCode));
         return false;
     }
-	ConsoleWriteLine("File infos received");
+    ::printf("%s\n", "File infos received.");
 	    
     std::string strNewFileName = 
 		std::string(fileInfo.szFileName) + "_temp";
     std::ofstream ofs(strNewFileName.c_str(), std::ios::binary);
     if (ofs.fail())
     {
-        std::cout << "Create local file failed." << std::endl;
+        ::printf ("Create local file failed.\n");
 		return false;
     }
 
-	std::cout 
-		<< "Writing file (1MB/*): " 
-		<< fileInfo.szFileName 
-		<< std::endl;
+    ::printf("    10   20   30   40   50   60   70   80   90   100\n");
+    ::printf("====^====^====^====^====^====^====^====^====^====^ % \n");
+    size_t nBlockSize = fileInfo.nFileLength / 50;  
 
 	char arrBuff[BUFF_LENGTH] = { 0 };
 	int nCounter = 0;
 	int nFileLength = fileInfo.nFileLength;
+    char arrRotate[] = { '\\', '|', '/', '-' };
+    int nRotate = 0;
 	while (nFileLength)
 	{
 		int nRecv = min(nFileLength, BUFF_LENGTH);
         if (!SocketUtils::RecvFromSocket(s, arrBuff, nRecv, nErrCode))
         {
-			ConsoleWriteLine("Err occured during pulling file content. Err msg: ");
-			ConsoleWriteLine(SocketUtils::QueryErrMsg(nErrCode));
+			::printf("\nErr occured during pulling file content. Err msg: %s\n",
+                SocketUtils::QueryErrMsg(nErrCode));
             ofs.close();
             return false;
         }
 		ofs.write(arrBuff, nRecv);
+        
 		nFileLength -= nRecv;
 		nCounter += nRecv;
-		if (nCounter > _1M_BYTES_)
+        if (4 == nRotate) 
+            nRotate = 0;
+        if (nCounter > nBlockSize)
 		{
-			nCounter -= _1M_BYTES_;
-			std::cout << ">";
+            nCounter -= nBlockSize;
+            ::printf("\b>%c", arrRotate[nRotate++]);
 		}
+        else
+            ::printf("\b%c", arrRotate[nRotate++]);
     }
     ofs.close();
-	ConsoleWriteLine("Write file completed. Checking md5..");  
+    ::printf("\nWrite file completed. Checking md5..\n");
 	
     std::ifstream ifs(strNewFileName.c_str(), std::ios::binary);
     if (ifs.fail())
     {
-        std::cout << "Open file for check md5 failed." << std::endl;
+        ::printf("Open file for check md5 failed.\n");
         return false;
     }
     MD5 md5;
@@ -119,19 +129,19 @@ bool GetFiles(SOCKET s)
     ifs.close();
 	if (0 != ::memcmp(md5.toString().c_str(), fileInfo.szMD5, 32))
     {
-		ConsoleWriteLine("Check md5 failed.");
+        ::printf("Check md5 failed.\n");
         return false;
     }
-	ConsoleWriteLine("Check md5 successful.");
+    ::printf("Check md5 successful.\n");
 
 	if (!::_access(fileInfo.szFileName, 0) && ::remove(fileInfo.szFileName))
     {
-		ConsoleWriteLine("Remove old file failed");
+        ::printf("Remove old file failed.\n");
         return false;
     }
 	if (::rename(strNewFileName.c_str(), fileInfo.szFileName))
     {
-		ConsoleWriteLine("Rename temp file failed");    
+        ::printf("Rename temp file failed.\n");
         return false;
     }
     return true;

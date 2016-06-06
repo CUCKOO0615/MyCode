@@ -23,7 +23,8 @@ void ConsoleWriteLine(const char* szFormat, ...)
 	va_start(argList, szFormat);
 	::vsprintf(charBuff, szFormat, argList);
 	va_end(argList);
-	std::cout << charBuff << std::endl;
+    ::strcat(charBuff, "\n");
+    ::printf(charBuff);
 }
 
 bool CheckYes(SOCKET s)
@@ -147,8 +148,15 @@ int _tmain(int argc, _TCHAR* argv[])
 			ConsoleWriteLine("Send file infos successful");
 			ConsoleWriteLine("Reading file: %s", strFilePath.c_str());
 
+            ::printf("==================================================   \n");
+            ::printf("    10   20   30   40   50   60   70   80   90   100 \n");
+            ::printf("====^====^====^====^====^====^====^====^====^====^ % \n");
+            size_t nBlockSize = fileInfo.nFileLength / 50;
+
             char arrBuff[BUFF_LENGTH] = { 0 };
 			int nCounter = 0;
+            char arrRotate[] = { '\\', '|', '/', '-' };
+            int nRotate = 0;
             while (EOF != ifs.peek())
             {
                 ifs.read(arrBuff, BUFF_LENGTH);
@@ -163,11 +171,15 @@ int _tmain(int argc, _TCHAR* argv[])
 				}
 
 				nCounter += nRead;
-				if (nCounter >= 1024 * 100)
-				{
-					std::cout << ">";
-					nCounter -= 1024 * 100;
-				}
+                if (4 == nRotate)
+                    nRotate = 0;
+                if (nCounter > nBlockSize)
+                {
+                    nCounter -= nBlockSize;
+                    ::printf("\b>%c", arrRotate[nRotate++]);
+                }
+                else
+                    ::printf("\b%c", arrRotate[nRotate++]);
 			}
 			ifs.close();
 

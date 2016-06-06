@@ -14,7 +14,8 @@ void ConsoleWriteLine(const char* szFormat, ...)
 	va_start(argList, szFormat);
 	::vsprintf(charBuff, szFormat, argList);
 	va_end(argList);
-	std::cout << charBuff << std::endl;
+    ::strcat(charBuff, "\n");
+    ::printf(charBuff);
 }
 
 #define BUFF_LENGTH 1024*600

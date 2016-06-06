@@ -66,6 +66,12 @@ BOOL CCUCKOO0615_Utils_MFCDlg::OnInitDialog()
 	// TODO: 在此添加额外的初始化代码
 
 
+
+    CString strObserDate;
+    strObserDate.Format("%s%2d%2d", "1988", 6, 15);
+    strObserDate.Replace(' ', '0');
+
+
     CString str = "D:\\tomcat-mds\\webapps\\MDS\\connection\\yb\\\\sz140404.txt";
     CString fileUrl = CutRelativePathByKeyword(str, "connection");
 
