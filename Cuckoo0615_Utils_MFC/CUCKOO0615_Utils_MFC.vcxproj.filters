@@ -66,6 +66,9 @@
     <ClInclude Include="Utils\CkScrollBar.h">
       <Filter>CkScrollBar</Filter>
     </ClInclude>
+    <ClInclude Include="E:\OpenSSL-Win32\include\openssl\des.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CUCKOO0615_Utils_MFC.cpp">

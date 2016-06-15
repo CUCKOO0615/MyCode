@@ -7,7 +7,8 @@
 #include "CUCKOO0615_Utils_MFCDlg.h"
 #include "afxdialogex.h"
 //#include "Utils/CKDbgConsole.h"
-
+#include "des.h"
+#pragma comment(lib,"OpenSSL/lib/VC/static/libeay32MTd.lib")
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -72,8 +73,8 @@ BOOL CCUCKOO0615_Utils_MFCDlg::OnInitDialog()
     strObserDate.Replace(' ', '0');
 
 
-    CString str = "D:\\tomcat-mds\\webapps\\MDS\\connection\\yb\\\\sz140404.txt";
-    CString fileUrl = CutRelativePathByKeyword(str, "connection");
+//     CString str = "D:\\tomcat-mds\\webapps\\MDS\\connection\\yb\\\\sz140404.txt";
+//     CString fileUrl = CutRelativePathByKeyword(str, "connection");
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -122,9 +123,53 @@ UINT AFX_CDECL ThreadEntry(LPVOID lpVoid)
 	return 0;
 }
 
+CString GetHex(BYTE* pData, int nSize)
+{
+    CString l_strHex = "";
+    for (int i = 0; i < nSize; i++)
+    {
+        BYTE l_nData;
+        memcpy(&l_nData, &pData[i], 1);
+        CString l_strTemp;
+        l_strTemp.Format("%02X", l_nData);
+        l_strHex += l_strTemp;
+    }
+    return l_strHex;
+}
+
+CString DesEncrypt(CString strData)
+{
+    DES_cblock key;
+    //**//* DES_random_key(&key); */ /**//* generate a random key */
+    //DES_string_to_key("12348765", &key);
+    memcpy(&key, "&^%$#@!", 8);
+    DES_cblock ivec = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
+    DES_key_schedule schedule;
+    DES_set_key_unchecked(&key, &schedule);
+
+    unsigned char l_pszPwdIn[64];
+    unsigned char l_pszPwdOut[64];
+    int n = 8 * (strData.GetLength() / 8) + 8;
+    memset(l_pszPwdIn, 8 - strData.GetLength() % 8, 64);
+    memcpy(l_pszPwdIn, strData.GetBuffer(), strData.GetLength());
+    memset(l_pszPwdOut, 0, 64);
+    for (int i = 0; i < n; i += 8)
+        DES_ncbc_encrypt(l_pszPwdIn + i, l_pszPwdOut + i, 8, &schedule, &ivec, DES_ENCRYPT);
+
+    //DES_cblock ivec1 = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
+    //memset(l_pszPwdIn, 0, 32);
+    //for(int i = 0; i < n; i+=8)
+    //	DES_ncbc_encrypt(l_pszPwdOut+i, l_pszPwdIn+i, 8, &schedule, &ivec1, DES_DECRYPT );
+
+    CString l_strOut = GetHex(l_pszPwdOut, n);
+    return l_strOut;
+}
+
 void CCUCKOO0615_Utils_MFCDlg::OnBnClickedOk()
 {
-	//AfxBeginThread(ThreadEntry, this);
+
+
+	AfxBeginThread(ThreadEntry, this);
 
 
 //     HICON arrIcons[] = {AfxGetApp()->LoadIcon(IDR_MAINFRAME),
