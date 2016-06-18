@@ -16,7 +16,8 @@ void CommandParams(const TCHAR* szServerName, const TCHAR* szSrvAppPath, const T
         if (CkServiceUtils::InstallService(szServerName, szSrvAppPath))
             ::printf("Service installed successful.\n");
         else
-            ::printf("Install service failed, err msg:%s\n", CkServiceUtils::GetLastErrMsg());
+            ::printf("Install service failed, err msg:%s\n", 
+			CkServiceUtils::GetLastErrMsg());
     }
     //Ð¶ÔØ·þÎñ
     else if (0 == _tcsicmp(szCmd, CMD_UNINSTALL))
@@ -24,7 +25,8 @@ void CommandParams(const TCHAR* szServerName, const TCHAR* szSrvAppPath, const T
         if (CkServiceUtils::UninstallService(szServerName))
             ::printf("Service uninstalled successful.\n");
         else
-            ::printf("Uninstall service failed, err msg:%s\n", CkServiceUtils::GetLastErrMsg());
+            ::printf("Uninstall service failed, err msg:%s\n", 
+			CkServiceUtils::GetLastErrMsg());
     }
 }
 

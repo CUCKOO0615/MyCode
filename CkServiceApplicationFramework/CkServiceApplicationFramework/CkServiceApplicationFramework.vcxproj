@@ -81,7 +81,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CkGlobalManager.h" />
+    <ClInclude Include="CkGlobalManager.hpp" />
     <ClInclude Include="CkMacros.h" />
     <ClInclude Include="CkServiceMain.h" />
     <ClInclude Include="CkServiceUtils.h" />

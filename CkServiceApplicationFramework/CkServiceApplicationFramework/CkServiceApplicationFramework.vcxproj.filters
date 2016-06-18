@@ -30,9 +30,6 @@
     <ClInclude Include="CkServiceMain.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="CkGlobalManager.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="CkMacros.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -41,6 +38,9 @@
     </ClInclude>
     <ClInclude Include="CkServiceUtils.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="CkGlobalManager.hpp">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

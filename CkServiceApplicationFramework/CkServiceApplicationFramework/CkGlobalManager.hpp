@@ -10,7 +10,7 @@ public:
     CkGlobalManager()
     {
         gLogUtils = CkLogUtils::CreateLogUtils();
-        CkLogUtils::InitLogUtils(gLogUtils, "X:\\log\\");
+        CkLogUtils::InitLogUtils(gLogUtils, "..\\..\\CkServiceLog\\");
     }
     ~CkGlobalManager()
     {
