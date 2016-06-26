@@ -1,0 +1,1 @@
+C:\GitHub_Code\MyCode\trunk\CkServiceApplicationFramework\Bin\CkServiceApplicationFramework.exe /install
