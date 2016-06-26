@@ -5,4 +5,5 @@
 
 #define SERVICE_NAME  _T("ъВеак╧")
 
+#define LOGFILE_PATH  "..\\CkServiceLog\\"
 

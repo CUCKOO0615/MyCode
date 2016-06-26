@@ -1,20 +1,22 @@
 #pragma once
 
+#include "CkMacros.h"
+
 #include "LogUtils_ExportC.h"
 #pragma comment(lib, "LogUtils.lib")
-LogUtils* gLogUtils = NULL;
+LogUtils* g_LogUtils = 0;
 
 class CkGlobalManager
 {
 public:
     CkGlobalManager()
     {
-        gLogUtils = CkLogUtils::CreateLogUtils();
-        CkLogUtils::InitLogUtils(gLogUtils, "..\\..\\CkServiceLog\\");
+        g_LogUtils = CkLogUtils::CreateLogUtils();
+		CkLogUtils::InitLogUtils(g_LogUtils, LOGFILE_PATH);
     }
     ~CkGlobalManager()
     {
-        CkLogUtils::ReleaseLogUtils(gLogUtils);
+        CkLogUtils::ReleaseLogUtils(g_LogUtils);
     }
 };
 static CkGlobalManager gm;

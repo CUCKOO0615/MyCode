@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "CkMacros.h"
 #include "CkServiceMain.h"
-#include "CkGlobalManager.h"
+#include "CkGlobalManager.hpp"
 
 SERVICE_STATUS_HANDLE g_hServiceStatus;
 
@@ -22,15 +22,15 @@ void WINAPI CkServiceMain::ServiceCtrl(DWORD dwOpcode)
     {
     case SERVICE_CONTROL_PAUSE:
         tServiceStatus.dwCurrentState = SERVICE_PAUSED;
-        CkLogUtils::RecordingA(gLogUtils, LL_INFO, "PAUSE");
+        CkLogUtils::RecordingA(g_LogUtils, LL_INFO, "PAUSE");
         break;
     case SERVICE_CONTROL_CONTINUE:
         tServiceStatus.dwCurrentState = SERVICE_RUNNING;
-        CkLogUtils::RecordingA(gLogUtils, LL_INFO, "CONTINUE");
+        CkLogUtils::RecordingA(g_LogUtils, LL_INFO, "CONTINUE");
         break;
     case SERVICE_CONTROL_STOP:
         tServiceStatus.dwCurrentState = SERVICE_STOPPED;
-        CkLogUtils::RecordingA(gLogUtils, LL_INFO, "STOP");
+        CkLogUtils::RecordingA(g_LogUtils, LL_INFO, "STOP");
         break;
     }
     if (FALSE != SetServiceStatus(g_hServiceStatus, &tServiceStatus))
@@ -43,11 +43,11 @@ void WINAPI CkServiceMain::ServiceMain(DWORD argc, LPTSTR * argv)
     g_hServiceStatus = RegisterServiceCtrlHandler(SERVICE_NAME, ServiceCtrl);
     if (g_hServiceStatus == (SERVICE_STATUS_HANDLE)0)
     {
-        CkLogUtils::RecordingA(gLogUtils, LL_INFO,
+        CkLogUtils::RecordingA(g_LogUtils, LL_INFO,
             "RegisterServiceCtrlHandler failed, err code:%d\n", ::GetLastError());
         return;
     }
-    ServiceCtrl(SERVICE_CONTROL_CONTINUE);
+	ServiceCtrl(SERVICE_CONTROL_STOP);
 
     //Do something here
 
