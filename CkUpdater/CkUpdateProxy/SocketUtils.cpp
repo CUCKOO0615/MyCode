@@ -148,6 +148,8 @@ bool SocketUtils::SendToSocket(SOCKET s, char* pBuffer, int nSpecLength, int& nE
 			nErrCode = ::WSAGetLastError();
 			return false;
 		}
+        if (!nSendedChars)
+            return false;
 		nRemainingChars -= nSendedChars;
 	}
 	return true;
@@ -165,7 +167,7 @@ bool SocketUtils::RecvFromSocket(SOCKET s, char* pBuffer, int nSpecLength, int& 
             nErrCode = ::WSAGetLastError();
             return false;
         }
-        if (0 == nRecv)
+        if (!nRecv)
             return false;
         nRecvedLen += nRecv;
     }
