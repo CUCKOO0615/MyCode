@@ -115,10 +115,11 @@ void LogUtils::Recording(LOG_LEVEL emLL, const char* szRec, ...)
     va_end(argsList);
 }
 
+static const char* _arrLogLevel[] = { "INFO", "WARN", "ERROR", "DEBUG" };
 void LogUtils::Recording(LOG_LEVEL emLL, const char* szRec, va_list argsList)
 {
     if (!m_isInited) return;
-    const char* arrLogLevel[] = { "INFO", "WARN", "ERROR", "DEBUG" };
+
 	char szCurTime[100] = { 0 };
 	CkCommon::FormatTime2Str(szCurTime, 100, "%Y/%m/%d %H:%M:%S");
 
@@ -126,7 +127,7 @@ void LogUtils::Recording(LOG_LEVEL emLL, const char* szRec, va_list argsList)
     m_pLogFile = ::fopen(m_strLogFilePath.c_str(), "a+");
     if (m_pLogFile)
     {
-		::fprintf(m_pLogFile, " [%s %s]: ", szCurTime, arrLogLevel[emLL]);
+        ::fprintf(m_pLogFile, " [%s %s]: ", szCurTime, _arrLogLevel[emLL]);
         ::vfprintf(m_pLogFile, szRec, argsList);
         ::fprintf(m_pLogFile, "\n");
 		CkCommon::SafeCloseLogFile(m_pLogFile);
